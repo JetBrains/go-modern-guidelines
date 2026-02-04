@@ -1,0 +1,10 @@
+{
+  "name": "modern-go-guidelines",
+  "description": "Enhances Claude Code with modern Go guidelines up to go 1.26 version.",
+  "version": "1.0.0",
+  "author": {
+    "name": "JetBrains, GoLand Team",
+    "email": "goland@jetbrains.com"
+  },
+  "keywords": ["go", "golang", "go-best-practices", "guidelines", "modernize"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "goland-claude-marketplace",
+  "owner": {
+    "name": "JetBrains, GoLand Team",
+    "email": "goland@jetbrains.com"
+  },
+  "metadata": {
+    "description": "Marketplace for Golang Claude Code extensions",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "modern-go-guidelines",
+      "description": "Enhances Claude Code with modern Go guidelines up to go 1.26 version.",
+      "author": {
+        "name": "JetBrains, GoLand Team",
+        "email": "goland@jetbrains.com"
+      },
+      "source": "./claude/modern-go-guidelines"
+    }
+  ]
+}
