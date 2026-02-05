@@ -1,14 +1,26 @@
 # Modern Go Guidelines
 
-This repository contains guidelines for code agents that help them write modern Go.
+This repository contains guidelines for code agents that help them write modern Go code.
 
 For example, an agent with these guidelines uses `max(a, b)` instead of an if-else block, `slices.Contains` instead of a manual loop, `cmp.Or(a, b, c)` instead of a chain of nil checks. It also knows about recent additions like `new(42)` to get a pointer to a value and `errors.AsType[T](err)` for type-safe error matching—both from Go 1.26.
 
 The guidelines cover the most useful features from Go 1.0 through Go 1.26, including everything targeted by the `modernize` analyzer. An agent will:
 
 - Detect the project's Go version from `go.mod`
-- Use language features and stdlib additions available in that version
+- Use language features and stdlib additions available up to and including that version
 - Prefer modern idioms over older patterns
+
+## Motivation
+
+All coding agents tend to generate outdated Go. Two reasons:
+
+1. **Training data lag.** Models don't know about features added after their training cutoff. They can't use `errors.AsType[T]` (Go 1.26) if they've never seen it.
+
+2. **Frequency bias.** Even for features the model knows, it often picks older patterns. There's more `for i := 0; i < n; i++` in the training data than `for i := range n`, so that's what comes out.
+
+These guidelines fix both problems by giving the agent an explicit reference.
+
+This aligns with the Go team's direction. The `modernize` analyzer exists to automatically update existing code to use newer idioms (see [this talk](https://www.youtube.com/watch?v=_VePjjjV9JU) from the Go team). These guidelines serve the same goal for new code: agents write modern Go from the start, so there's less to fix later.
 
 ## Instructions
 
@@ -54,15 +66,3 @@ If you'd prefer a different target version, just let me know.
 ```
 
 After this, any Go code the agent writes will follow the guidelines.
-
-## Why this exists
-
-Code agents tend to generate outdated Go. Two reasons:
-
-1. **Training data lag.** Models don't know about features added after their training cutoff. They can't use `errors.AsType[T]` (Go 1.26) if they've never seen it.
-
-2. **Frequency bias.** Even for features the model knows, it often picks older patterns. There's more `for i := 0; i < n; i++` in the training data than `for i := range n`, so that's what comes out.
-
-These guidelines fix both problems by giving the agent an explicit reference.
-
-This aligns with the Go team's direction. The `modernize` analyzer exists to automatically update existing code to use newer idioms (see [this talk](https://www.youtube.com/watch?v=_VePjjjV9JU) from the Go team). These guidelines serve the same goal for new code: agents write modern Go from the start, so there's less to fix later.
