@@ -1,3 +1,5 @@
+[![official JetBrains project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+
 # Modern Go Guidelines
 
 This repository contains guidelines for code agents that help them write modern Go code.
