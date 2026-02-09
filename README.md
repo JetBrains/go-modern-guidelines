@@ -28,7 +28,15 @@ The guidelines are available for Junie and Claude Code.
 
 ### Junie
 
-TODO
+Starting with version 2xx.620.xx, Junie includes the modern Go guidelines out of the box. No manual setup is required — just make sure you're running a compatible version.
+
+#### Updating Junie
+
+Go to **Settings → Plugins → Installed**, find Junie, and click **Update** if a newer version is available.
+
+#### Configuration
+
+The guidelines are controlled via **Settings → Tools → Junie → Project Settings → Go**. The **Provide modern Go guidelines** option is enabled by default. Disable it if you prefer Junie to generate code without these guidelines.
 
 ### Claude Code
 
