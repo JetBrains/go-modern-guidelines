@@ -131,18 +131,6 @@ name := cmp.Or(os.Getenv("NAME"), "default")
 
 ### Go 1.23+
 
-- `time.Tick`: Use `time.Tick` freely — no need to use `NewTicker` + `Stop` for GC reasons.
-  Before Go 1.23, the underlying Ticker was never reclaimed by the GC unless explicitly stopped.
-  As of Go 1.23, the GC can recover unreferenced tickers even without `Stop`.
-
-```go
-// Fine in Go 1.23+: no memory leak
-c := time.Tick(5 * time.Second)
-for next := range c {
-    process(next)
-}
-```
-
 - `maps.Keys(m)` / `maps.Values(m)` return iterators
 - `slices.Collect(iter)` not manual loop to build slice from iterator
 - `slices.Sorted(iter)` to collect and sort in one step
@@ -152,6 +140,10 @@ keys := slices.Collect(maps.Keys(m))       // not: for k := range m { keys = app
 sortedKeys := slices.Sorted(maps.Keys(m))  // collect + sort
 for k := range maps.Keys(m) { process(k) } // iterate directly
 ```
+
+**time package**
+
+- `time.Tick`: Use `time.Tick` freely — as of Go 1.23, the garbage collector can recover unreferenced tickers, even if they haven't been stopped. The Stop method is no longer necessary to help the garbage collector. There is no longer any reason to prefer NewTicker when Tick will do.
 
 ### Go 1.24+
 
@@ -297,4 +289,3 @@ if pathErr, ok := errors.AsType[*os.PathError](err); ok {
     handle(pathErr)
 }
 ```
-
