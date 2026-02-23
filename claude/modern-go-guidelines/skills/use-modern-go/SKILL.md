@@ -131,6 +131,18 @@ name := cmp.Or(os.Getenv("NAME"), "default")
 
 ### Go 1.23+
 
+- `time.Tick`: Use `time.Tick` freely — no need to use `NewTicker` + `Stop` for GC reasons.
+  Before Go 1.23, the underlying Ticker was never reclaimed by the GC unless explicitly stopped.
+  As of Go 1.23, the GC can recover unreferenced tickers even without `Stop`.
+
+```go
+// Fine in Go 1.23+: no memory leak
+c := time.Tick(5 * time.Second)
+for next := range c {
+    process(next)
+}
+```
+
 - `maps.Keys(m)` / `maps.Values(m)` return iterators
 - `slices.Collect(iter)` not manual loop to build slice from iterator
 - `slices.Sorted(iter)` to collect and sort in one step
