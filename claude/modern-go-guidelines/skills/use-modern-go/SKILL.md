@@ -219,6 +219,25 @@ for part := range strings.SplitSeq(s, ",") {
 ```
 Also: `strings.FieldsSeq`, `bytes.SplitSeq`, `bytes.FieldsSeq`.
 
+**testing/synctest package**
+
+- Use `testing/synctest` for deterministic testing of concurrent code with goroutines and time.
+- `synctest.Run(func())` executes code in a bubble where time and goroutines are controlled.
+- Fast, deterministic tests for timeouts, tickers, and race conditions.
+
+```go
+func TestTimeout(t *testing.T) {
+    synctest.Run(func() {
+        ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+        defer cancel()
+
+        // Simulated time advances only when goroutines block
+        // Test completes instantly but behaves as if 5 seconds passed
+        <-ctx.Done()
+    })
+}
+```
+
 ### Go 1.25+
 
 - `wg.Go(fn)` not `wg.Add(1)` + `go func() { defer wg.Done(); ... }()`.
