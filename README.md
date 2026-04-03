@@ -57,6 +57,14 @@ Run the following commands inside a Claude Code session.
 /plugin install modern-go-guidelines
 ```
 
+Alternatively, install with [skills.sh](https://skills.sh); the same skill package works across agents such as Codex, OpenCode, and Cursor, not only Claude Code.
+
+```bash
+npx skills add JetBrains/go-modern-guidelines
+```
+
+(`--skill use-modern-go` installs only this skill.)
+
 #### Usage
 
 The plugin adds the `/use-modern-go` command. Run it at the start of a session to activate the guidelines:
