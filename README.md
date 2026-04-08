@@ -26,7 +26,7 @@ This aligns with the Go team's direction. The `modernize` analyzer exists to aut
 
 ## Instructions
 
-The guidelines are available for Junie and Claude Code.
+The guidelines are available for Junie, Claude Code, and other agents via skills.sh.
 
 ### [Junie](https://junie.jetbrains.com)
 
@@ -57,14 +57,6 @@ Run the following commands inside a Claude Code session.
 /plugin install modern-go-guidelines
 ```
 
-Alternatively, install with [skills.sh](https://skills.sh); the same skill package works across agents such as Codex, OpenCode, and Cursor, not only Claude Code.
-
-```bash
-npx skills add JetBrains/go-modern-guidelines
-```
-
-(`--skill use-modern-go` installs only this skill.)
-
 #### Usage
 
 The plugin adds the `/use-modern-go` command. Run it at the start of a session to activate the guidelines:
@@ -84,3 +76,13 @@ If you'd prefer a different target version, just let me know.
 ```
 
 After this, any Go code the agent writes will follow the guidelines.
+
+### Other Agents (via [skills.sh](https://skills.sh))
+
+The same skill package works across agents such as Codex, OpenCode, and Cursor. Install it with:
+
+```bash
+npx skills add JetBrains/go-modern-guidelines
+```
+
+(`--skill use-modern-go` installs only this skill.)
