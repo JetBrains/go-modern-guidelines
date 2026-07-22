@@ -19,7 +19,7 @@ DO NOT search for go.mod files or try to detect the version yourself. Use ONLY t
 
 **If version is "unknown":**
 - Say: "Could not detect Go version in this repository"
-- Use AskUserQuestion: "Which Go version should I target?" → [1.23] / [1.24] / [1.25] / [1.26]
+- Ask: "Which Go version should I target?" and suggest 1.23, 1.24, 1.25, or 1.26
 
 **When writing Go code**, use ALL features from this document up to the target version:
 - Prefer modern built-ins and packages (`slices`, `maps`, `cmp`) over legacy patterns

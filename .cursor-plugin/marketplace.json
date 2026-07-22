@@ -1,0 +1,18 @@
+{
+  "name": "goland-cursor-marketplace",
+  "owner": {
+    "name": "JetBrains, GoLand Team",
+    "email": "goland@jetbrains.com"
+  },
+  "metadata": {
+    "description": "Marketplace for Go coding agent extensions",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "modern-go-guidelines",
+      "source": "./plugins/cursor/modern-go-guidelines",
+      "description": "Modern Go guidelines up to Go 1.26"
+    }
+  ]
+}

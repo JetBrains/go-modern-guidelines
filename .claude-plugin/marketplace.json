@@ -16,7 +16,7 @@
         "name": "JetBrains, GoLand Team",
         "email": "goland@jetbrains.com"
       },
-      "source": "./claude/modern-go-guidelines"
+      "source": "./plugins/claude/modern-go-guidelines"
     }
   ]
 }
