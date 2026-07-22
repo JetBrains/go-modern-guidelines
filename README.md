@@ -2,7 +2,7 @@
 
 # Modern Go Guidelines
 
-This repository contains [guidelines](https://github.com/JetBrains/go-modern-guidelines/blob/main/claude/modern-go-guidelines/skills/use-modern-go/SKILL.md) for code agents that help them write modern Go code.
+This repository contains [guidelines](https://github.com/JetBrains/go-modern-guidelines/blob/main/skills/use-modern-go/SKILL.md) for code agents that help them write modern Go code.
 
 For example, an agent with these guidelines uses `max(a, b)` instead of an if-else block, `slices.Contains` instead of a manual loop, `cmp.Or(a, b, c)` instead of a chain of nil checks. It also knows about recent additions like `new(42)` to get a pointer to a value and `errors.AsType[T](err)` for type-safe error matching—both from Go 1.26.
 
@@ -26,7 +26,7 @@ This aligns with the Go team's direction. The `modernize` analyzer exists to aut
 
 ## Instructions
 
-The guidelines are available for Junie, Claude Code, and other agents via skills.sh.
+The guidelines are available for Junie, Claude Code, Codex, and Cursor, and for other agents via skills.sh.
 
 ### [Junie](https://junie.jetbrains.com)
 
@@ -41,8 +41,6 @@ Go to **Settings → Plugins → Installed**, find Junie, and click **Update** i
 The guidelines are controlled via **Settings → Tools → Junie → Project Settings → Go**. The **Provide modern Go guidelines** option is enabled by default. Disable it if you prefer Junie to generate code without these guidelines.
 
 ### [Claude Code](https://claude.com/product/claude-code)
-
-For convenience, the guidelines are distributed as a Claude Code plugin.
 
 #### Installation
 Run the following commands inside a Claude Code session.
@@ -77,9 +75,37 @@ If you'd prefer a different target version, just let me know.
 
 After this, any Go code the agent writes will follow the guidelines.
 
+### [Codex](https://developers.openai.com/codex/)
+
+#### Installation
+Run the following commands in a terminal.
+
+1. Add this repository as a marketplace:
+```
+codex plugin marketplace add JetBrains/go-modern-guidelines
+```
+
+2. Install the plugin:
+```
+codex plugin add modern-go-guidelines@goland-codex-marketplace
+```
+
+### [Cursor](https://cursor.com)
+
+For convenience, the guidelines are distributed as a Cursor plugin.
+
+#### Installation
+
+1. Add this repository as a marketplace by running the following command in a terminal:
+```
+cursor-agent plugin marketplace add https://github.com/JetBrains/go-modern-guidelines
+```
+
+2. Install the plugin with the `/plugins` command inside a Cursor session.
+
 ### Other Agents (via [skills.sh](https://skills.sh))
 
-The same skill package works across agents such as Codex, OpenCode, and Cursor. Install it with:
+The same skill package works across other agents such as OpenCode. Install it with:
 
 ```bash
 npx skills add JetBrains/go-modern-guidelines

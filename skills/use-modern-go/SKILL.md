@@ -7,11 +7,14 @@ description: Apply modern Go syntax guidelines based on project's Go version. Us
 
 ## Detected Go Version
 
-!`grep -rh "^go " --include="go.mod" . 2>/dev/null | cut -d' ' -f2 | sort | uniq -c | sort -nr | head -1 | xargs | cut -d' ' -f2 | grep . || echo unknown`
+Run the bundled detector for the current operating system while keeping the working directory at the project root. Resolve script paths relative to the directory containing this `SKILL.md`.
+
+- **Windows:** run `scripts/detect-go-version.ps1` with Windows PowerShell 5.1+ using `-NoProfile -File`.
+- **macOS or Linux:** run `scripts/detect-go-version.sh` with `sh`.
 
 ## How to Use This Skill
 
-DO NOT search for go.mod files or try to detect the version yourself. Use ONLY the version shown above.
+Use ONLY the version printed by the detector. If the script cannot run, read the nearest `go.mod`; for a multi-module repository, use the lowest module Go version. If no version can be detected, use `unknown`.
 
 **If version detected (not "unknown"):**
 - Say: "This project is using Go X.XX, so I’ll stick to modern Go best practices and freely use language features up to and including this version. If you’d prefer a different target version, just let me know."
@@ -19,7 +22,7 @@ DO NOT search for go.mod files or try to detect the version yourself. Use ONLY t
 
 **If version is "unknown":**
 - Say: "Could not detect Go version in this repository"
-- Use AskUserQuestion: "Which Go version should I target?" → [1.23] / [1.24] / [1.25] / [1.26]
+- Ask: "Which Go version should I target?" and suggest 1.23, 1.24, 1.25, or 1.26
 
 **When writing Go code**, use ALL features from this document up to the target version:
 - Prefer modern built-ins and packages (`slices`, `maps`, `cmp`) over legacy patterns

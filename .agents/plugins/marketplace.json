@@ -1,0 +1,20 @@
+{
+  "name": "goland-codex-marketplace",
+  "interface": {
+    "displayName": "GoLand Codex Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "modern-go-guidelines",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex/modern-go-guidelines"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
