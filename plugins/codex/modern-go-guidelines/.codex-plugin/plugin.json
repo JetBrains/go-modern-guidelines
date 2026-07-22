@@ -1,0 +1,27 @@
+{
+  "name": "modern-go-guidelines",
+  "version": "1.0.0",
+  "description": "Enhances coding agents with modern Go guidelines up to Go 1.26.",
+  "author": {
+    "name": "JetBrains, GoLand Team",
+    "email": "goland@jetbrains.com",
+    "url": "https://www.jetbrains.com/go/"
+  },
+  "homepage": "https://github.com/JetBrains/go-modern-guidelines",
+  "repository": "https://github.com/JetBrains/go-modern-guidelines",
+  "license": "Apache-2.0",
+  "keywords": ["go", "golang", "go-best-practices", "guidelines", "modernize"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Modern Go Guidelines",
+    "shortDescription": "Write idiomatic Go for the project's Go version",
+    "longDescription": "Detect the project's Go version and apply modern language and standard-library guidance available through that version.",
+    "developerName": "JetBrains, GoLand Team",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/JetBrains/go-modern-guidelines",
+    "defaultPrompt": [
+      "Apply modern Go guidelines for this project."
+    ]
+  }
+}
