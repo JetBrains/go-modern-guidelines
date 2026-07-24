@@ -1,0 +1,1229 @@
+[
+  {
+    "id": "generic_methods",
+    "since_version": "1.27",
+    "guideline": "Use generic methods instead of package-level generic helper functions when the operation naturally belongs to the type itself.",
+    "details": "Generic methods keep operations in the namespace of the type that owns them. Keep package-level helpers for operations that do not naturally belong to one receiver type.",
+    "examples": [
+      {
+        "before": [
+          "type Set[T comparable] map[T]struct{}",
+          "",
+          "func Map[T comparable, U any](s Set[T], f func(T) U) []U {",
+          "  out := make([]U, 0, len(s))",
+          "  for value := range s {",
+          "    out = append(out, f(value))",
+          "  }",
+          "  return out",
+          "}",
+          "",
+          "names := Map(users, func(user User) string {",
+          "  return user.Name",
+          "})"
+        ],
+        "after": [
+          "type Set[T comparable] map[T]struct{}",
+          "",
+          "func (s Set[T]) Map[U any](f func(T) U) []U {",
+          "  out := make([]U, 0, len(s))",
+          "  for value := range s {",
+          "    out = append(out, f(value))",
+          "  }",
+          "  return out",
+          "}",
+          "",
+          "names := users.Map(func(user User) string {",
+          "  return user.Name",
+          "})"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "promoted_field_literals",
+    "since_version": "1.27",
+    "guideline": "Set embedded struct fields directly with promoted field names in Go 1.27+ struct literals instead of constructing the embedded struct explicitly.",
+    "details": "Go 1.27 allows keyed struct literals to set fields promoted from embedded struct types directly. Use Field: value in the outer literal instead of Embedded: Embedded{Field: value} when you are just setting promoted fields. Do not mix a promoted field with the embedded field that promotes it; pointer-embedded paths are not supported.",
+    "examples": [
+      {
+        "before": [
+          "type AuditInfo struct {",
+          "  CreatedBy string",
+          "  UpdatedBy string",
+          "}",
+          "",
+          "type Document struct {",
+          "  AuditInfo",
+          "  Name string",
+          "  Path string",
+          "}",
+          "",
+          "doc := Document{",
+          "  AuditInfo: AuditInfo{",
+          "    CreatedBy: \"alice\",",
+          "    UpdatedBy: \"alice\",",
+          "  },",
+          "  Name: \"report.pdf\",",
+          "  Path: \"/documents/report.pdf\",",
+          "}"
+        ],
+        "after": [
+          "type AuditInfo struct {",
+          "  CreatedBy string",
+          "  UpdatedBy string",
+          "}",
+          "",
+          "type Document struct {",
+          "  AuditInfo",
+          "  Name string",
+          "  Path string",
+          "}",
+          "",
+          "doc := Document{",
+          "  CreatedBy: \"alice\",",
+          "  UpdatedBy: \"alice\",",
+          "  Name:      \"report.pdf\",",
+          "  Path:      \"/documents/report.pdf\",",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strings_bytes_cut_last",
+    "since_version": "1.27",
+    "guideline": "Use strings.CutLast and bytes.CutLast instead of LastIndex plus manual slicing around the last separator.",
+    "details": "CutLast splits around the final separator and returns before, after, and found. It removes LastIndex checks and manual separator-length slicing.",
+    "examples": [
+      {
+        "before": [
+          "i := strings.LastIndex(path, \"/\")",
+          "if i < 0 {",
+          "  return \"\", path, false",
+          "}",
+          "dir, file := path[:i], path[i+1:]"
+        ],
+        "after": [
+          "dir, file, found := strings.CutLast(path, \"/\")"
+        ]
+      },
+      {
+        "before": [
+          "i := bytes.LastIndex(line, []byte(\":\"))",
+          "if i < 0 {",
+          "  return nil, line, false",
+          "}",
+          "name, value := line[:i], line[i+1:]"
+        ],
+        "after": [
+          "name, value, found := bytes.CutLast(line, []byte(\":\"))"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "stdlib_uuid",
+    "since_version": "1.27",
+    "guideline": "Use the standard library uuid package instead of third-party libraries or custom UUID implementations when targeting Go 1.27+.",
+    "details": "The standard uuid package covers common UUID generation and parsing without an external dependency. Keep a third-party package only when targeting older Go versions or needing behavior outside the standard API.",
+    "examples": [
+      {
+        "before": [
+          "import googleuuid \"github.com/google/uuid\"",
+          "",
+          "id := googleuuid.New()",
+          "text := id.String()"
+        ],
+        "after": [
+          "import \"uuid\"",
+          "",
+          "id := uuid.New()",
+          "text := id.String()"
+        ]
+      },
+      {
+        "before": [
+          "id, err := googleuuid.Parse(raw)",
+          "if err != nil {",
+          "  return err",
+          "}"
+        ],
+        "after": [
+          "id, err := uuid.Parse(raw)",
+          "if err != nil {",
+          "  return err",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "url_clone",
+    "since_version": "1.27",
+    "guideline": "Use net/url URL.Clone and Values.Clone methods to copy URLs and URL values instead of manual copying.",
+    "details": "URL.Clone and Values.Clone create deep copies using net/url's own representation. They avoid partial manual copies that can accidentally share mutable slices or miss URL fields.",
+    "examples": [
+      {
+        "before": [
+          "copy := new(url.URL)",
+          "*copy = *base",
+          "if base.User != nil {",
+          "  username := base.User.Username()",
+          "  if password, ok := base.User.Password(); ok {",
+          "    copy.User = url.UserPassword(username, password)",
+          "  } else {",
+          "    copy.User = url.User(username)",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "copy := base.Clone()"
+        ]
+      },
+      {
+        "before": [
+          "copy := make(url.Values, len(values))",
+          "for key, items := range values {",
+          "  copy[key] = append([]string(nil), items...)",
+          "}"
+        ],
+        "after": [
+          "copy := values.Clone()"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "new_expression",
+    "since_version": "1.26",
+    "guideline": "Use new(value) for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for &value.",
+    "details": "new(value) creates a *T from a value expression. In struct literals, prefer Field: new(value) for pointer fields over helper calls whose only purpose is returning &value; keep helpers only when they add behavior.",
+    "examples": [
+      {
+        "before": [
+          "func Pointer[T any](value T) *T {",
+          "  return &value",
+          "}",
+          "",
+          "cfg := Config{",
+          "  Timeout: Pointer(30),",
+          "  Debug:   Pointer(true),",
+          "}"
+        ],
+        "after": [
+          "cfg := Config{",
+          "  Timeout: new(30),",
+          "  Debug:   new(true),",
+          "}"
+        ]
+      },
+      {
+        "before": [
+          "timeout := 30",
+          "debug := true",
+          "cfg := Config{",
+          "  Timeout: &timeout,",
+          "  Debug:   &debug,",
+          "}"
+        ],
+        "after": [
+          "cfg := Config{",
+          "  Timeout: new(30),",
+          "  Debug:   new(true),",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "errors_as_type",
+    "since_version": "1.26",
+    "guideline": "Use errors.AsType[T](err) when checking whether an error matches a specific type.",
+    "details": "errors.AsType returns the matched error value and a boolean directly. It avoids a separate temporary variable and the pointer-to-target pattern required by errors.As.",
+    "examples": [
+      {
+        "before": [
+          "var pathErr *os.PathError",
+          "if errors.As(err, &pathErr) {",
+          "  handle(pathErr)",
+          "}"
+        ],
+        "after": [
+          "if pathErr, ok := errors.AsType[*os.PathError](err); ok {",
+          "  handle(pathErr)",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sync_waitgroup_go",
+    "since_version": "1.25",
+    "guideline": "Use wg.Go when spawning goroutines tracked by a sync.WaitGroup.",
+    "details": "WaitGroup.Go starts a goroutine and handles the matching Add and Done calls. Use it when the goroutine's lifetime is exactly what the WaitGroup should track.",
+    "examples": [
+      {
+        "before": [
+          "var wg sync.WaitGroup",
+          "for _, item := range items {",
+          "  wg.Add(1)",
+          "  go func() {",
+          "    defer wg.Done()",
+          "    process(item)",
+          "  }()",
+          "}",
+          "wg.Wait()"
+        ],
+        "after": [
+          "var wg sync.WaitGroup",
+          "for _, item := range items {",
+          "  wg.Go(func() {",
+          "    process(item)",
+          "  })",
+          "}",
+          "wg.Wait()"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "testing_t_context",
+    "since_version": "1.24",
+    "guideline": "Use t.Context() when a test function needs a context tied to the test lifetime.",
+    "details": "t.Context returns a context tied to the test lifetime. It removes manual background context setup when helper work should stop as the test is ending.",
+    "examples": [
+      {
+        "before": [
+          "func TestFoo(t *testing.T) {",
+          "  ctx, cancel := context.WithCancel(context.Background())",
+          "  defer cancel()",
+          "  result := doSomething(ctx)",
+          "}"
+        ],
+        "after": [
+          "func TestFoo(t *testing.T) {",
+          "  ctx := t.Context()",
+          "  result := doSomething(ctx)",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "json_omitzero",
+    "since_version": "1.24",
+    "guideline": "Use omitzero on JSON-tagged bool, numeric, struct, and time fields whose zero value should be omitted; keep omitempty for empty strings, slices, and maps.",
+    "details": "When adding or editing JSON struct tags, use omitzero when the Go zero value means the field is absent, such as false, 0, or a zero time. Use omitempty when JSON empty-value semantics are intended, especially empty strings, slices, and maps.",
+    "examples": [
+      {
+        "before": [
+          "type CacheEntry struct {",
+          "  Name      string    `json:\"name,omitempty\"`",
+          "  Warm      bool      `json:\"warm,omitempty\"`",
+          "  Hits      int64     `json:\"hits,omitempty\"`",
+          "  ExpiresAt time.Time `json:\"expiresAt,omitempty\"`",
+          "}"
+        ],
+        "after": [
+          "type CacheEntry struct {",
+          "  Name      string    `json:\"name,omitempty\"`",
+          "  Warm      bool      `json:\"warm,omitzero\"`",
+          "  Hits      int64     `json:\"hits,omitzero\"`",
+          "  ExpiresAt time.Time `json:\"expiresAt,omitzero\"`",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "testing_b_loop",
+    "since_version": "1.24",
+    "guideline": "Use b.Loop() for the main loop in benchmark functions.",
+    "details": "b.Loop is the modern benchmark loop. It manages benchmark iteration mechanics for you and can remove the need for manual timer control in the benchmark body.",
+    "examples": [
+      {
+        "before": [
+          "func BenchmarkFoo(b *testing.B) {",
+          "  for i := 0; i < b.N; i++ {",
+          "    doWork()",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "func BenchmarkFoo(b *testing.B) {",
+          "  for b.Loop() {",
+          "    doWork()",
+          "  }",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strings_split_seq",
+    "since_version": "1.24",
+    "guideline": "Use strings or bytes SplitSeq and FieldsSeq helpers when iterating over split results.",
+    "details": "SplitSeq and FieldsSeq stream substrings instead of allocating a slice of all parts. The same idea applies to the matching bytes package helpers.",
+    "examples": [
+      {
+        "before": [
+          "for _, part := range strings.Split(s, \",\") {",
+          "  process(part)",
+          "}"
+        ],
+        "after": [
+          "for part := range strings.SplitSeq(s, \",\") {",
+          "  process(part)",
+          "}"
+        ]
+      },
+      {
+        "before": [
+          "for _, field := range bytes.Fields(b) {",
+          "  process(field)",
+          "}"
+        ],
+        "after": [
+          "for field := range bytes.FieldsSeq(b) {",
+          "  process(field)",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maps_keys_values_iter",
+    "since_version": "1.23",
+    "guideline": "Use maps.Keys or maps.Values directly as iterators instead of manually looping over a map.",
+    "details": "maps.Keys and maps.Values can be ranged over directly when a slice is not needed. This avoids allocating a temporary collection just to iterate.",
+    "examples": [
+      {
+        "before": [
+          "for k := range m {",
+          "  process(k)",
+          "}"
+        ],
+        "after": [
+          "for k := range maps.Keys(m) {",
+          "  process(k)",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_collect",
+    "since_version": "1.23",
+    "guideline": "Use slices.Collect to build a slice from an iterator.",
+    "details": "slices.Collect materializes an iterator into a slice when a slice is actually required. Prefer ranging over the iterator directly when streaming is enough.",
+    "examples": [
+      {
+        "before": [
+          "keys := make([]string, 0, len(m))",
+          "for k := range m {",
+          "  keys = append(keys, k)",
+          "}"
+        ],
+        "after": [
+          "keys := slices.Collect(maps.Keys(m))"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_sorted",
+    "since_version": "1.23",
+    "guideline": "Use slices.Sorted to collect and sort iterator values in one step.",
+    "details": "slices.Sorted collects iterator values and sorts them in one call. It is useful for deterministic output from unordered sources such as map keys.",
+    "examples": [
+      {
+        "before": [
+          "keys := make([]string, 0, len(m))",
+          "for k := range m {",
+          "  keys = append(keys, k)",
+          "}",
+          "slices.Sort(keys)"
+        ],
+        "after": [
+          "keys := slices.Sorted(maps.Keys(m))"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "time_tick_gc",
+    "since_version": "1.23",
+    "guideline": "Use time.Tick when it fits; Go 1.23 can recover unreferenced tickers without requiring Stop for GC.",
+    "details": "Go 1.23 made unreferenced tickers recoverable by the garbage collector. Use time.Tick for simple forever loops, and use time.NewTicker when you need Stop or Reset.",
+    "examples": [
+      {
+        "before": [
+          "ticker := time.NewTicker(time.Second)",
+          "defer ticker.Stop()",
+          "for range ticker.C {",
+          "  poll()",
+          "}"
+        ],
+        "after": [
+          "for range time.Tick(time.Second) {",
+          "  poll()",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "range_over_int",
+    "since_version": "1.22",
+    "guideline": "Use for i := range n when iterating from 0 to n-1.",
+    "details": "Ranging over an integer is the concise Go 1.22 form for zero-based count loops. Keep a traditional for loop when you need a non-zero start, custom step, or changing bound.",
+    "examples": [
+      {
+        "before": [
+          "for i := 0; i < len(items); i++ {",
+          "  process(items[i])",
+          "}"
+        ],
+        "after": [
+          "for i := range len(items) {",
+          "  process(items[i])",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "loopvar_capture",
+    "since_version": "1.22",
+    "guideline": "Do not add redundant loop-variable copies before closures or taking addresses; Go 1.22 gives each iteration its own variables.",
+    "details": "Go 1.22 gives each loop iteration its own variables, so defensive copies like v := v are usually redundant before closures, goroutines, deferred functions, or appending &v. Keep an explicit copy only when it serves another purpose. If you need a pointer to the original slice element rather than the per-iteration copy, use &slice[i].",
+    "examples": [
+      {
+        "before": [
+          "for _, item := range items {",
+          "  item := item",
+          "  go func() {",
+          "    process(item)",
+          "  }()",
+          "}"
+        ],
+        "after": [
+          "for _, item := range items {",
+          "  go func() {",
+          "    process(item)",
+          "  }()",
+          "}"
+        ]
+      },
+      {
+        "before": [
+          "var selected []*Item",
+          "for _, item := range items {",
+          "  item := item",
+          "  if item.Enabled {",
+          "    selected = append(selected, &item)",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "var selected []*Item",
+          "for _, item := range items {",
+          "  if item.Enabled {",
+          "    selected = append(selected, &item)",
+          "  }",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cmp_or",
+    "since_version": "1.22",
+    "guideline": "Use cmp.Or to pick the first non-zero value from a fallback chain.",
+    "details": "cmp.Or returns the first non-zero value from its arguments. It is concise for simple fallback chains, but remember that all arguments are evaluated before the call.",
+    "examples": [
+      {
+        "before": [
+          "name := os.Getenv(\"NAME\")",
+          "if name == \"\" {",
+          "  name = \"default\"",
+          "}"
+        ],
+        "after": [
+          "name := cmp.Or(os.Getenv(\"NAME\"), \"default\")"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "reflect_type_for",
+    "since_version": "1.22",
+    "guideline": "Use reflect.TypeFor[T]() instead of reflect.TypeOf((*T)(nil)).Elem().",
+    "details": "reflect.TypeFor returns the reflect.Type for a compile-time type parameter or type argument. It avoids nil-pointer tricks and is clearer for interface types.",
+    "examples": [
+      {
+        "before": [
+          "typ := reflect.TypeOf((*T)(nil)).Elem()"
+        ],
+        "after": [
+          "typ := reflect.TypeFor[T]()"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "http_servemux_patterns",
+    "since_version": "1.22",
+    "guideline": "Use method-aware ServeMux patterns and r.PathValue for path parameters.",
+    "details": "The modern ServeMux pattern syntax can include an HTTP method and named path wildcards. r.PathValue retrieves wildcard values without manual path trimming.",
+    "examples": [
+      {
+        "before": [
+          "mux.HandleFunc(\"/api/\", func(w http.ResponseWriter, r *http.Request) {",
+          "  if r.Method != http.MethodGet {",
+          "    http.Error(w, \"method not allowed\", http.StatusMethodNotAllowed)",
+          "    return",
+          "  }",
+          "  id := strings.TrimPrefix(r.URL.Path, \"/api/\")",
+          "  handleID(w, r, id)",
+          "})"
+        ],
+        "after": [
+          "mux.HandleFunc(\"GET /api/{id}\", func(w http.ResponseWriter, r *http.Request) {",
+          "  handleID(w, r, r.PathValue(\"id\"))",
+          "})"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "min_max",
+    "since_version": "1.21",
+    "guideline": "Use built-in min and max instead of handwritten comparisons.",
+    "details": "The min and max built-ins express ordered comparisons directly. They remove branch boilerplate when the logic is simply choosing the smaller or larger value.",
+    "examples": [
+      {
+        "before": [
+          "if b > a {",
+          "  a = b",
+          "}"
+        ],
+        "after": [
+          "a = max(a, b)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "clear",
+    "since_version": "1.21",
+    "guideline": "Use clear(m) to delete all map entries or clear(s) to zero slice elements.",
+    "details": "clear is the idiomatic built-in for removing all map entries or zeroing the elements of a slice. For slices it preserves the slice length and capacity.",
+    "examples": [
+      {
+        "before": [
+          "for k := range m {",
+          "  delete(m, k)",
+          "}"
+        ],
+        "after": [
+          "clear(m)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_contains",
+    "since_version": "1.21",
+    "guideline": "Use slices.Contains instead of a manual search loop.",
+    "details": "slices.Contains is the direct membership test for slices of comparable values. It replaces a manual search loop whose only result is whether the element is present.",
+    "examples": [
+      {
+        "before": [
+          "found := false",
+          "for _, item := range items {",
+          "  if item == x {",
+          "    found = true",
+          "    break",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "found := slices.Contains(items, x)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_index",
+    "since_version": "1.21",
+    "guideline": "Use slices.Index to find the index of an element, returning -1 when absent.",
+    "details": "slices.Index is the direct index lookup for slices of comparable values. It returns -1 when the value is absent, matching the common handwritten convention.",
+    "examples": [
+      {
+        "before": [
+          "index := -1",
+          "for i, item := range items {",
+          "  if item == x {",
+          "    index = i",
+          "    break",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "index := slices.Index(items, x)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_index_func",
+    "since_version": "1.21",
+    "guideline": "Use slices.IndexFunc to find an element by predicate.",
+    "details": "slices.IndexFunc is the standard predicate-based lookup. Use it when the match depends on fields, derived values, or any condition other than direct equality.",
+    "examples": [
+      {
+        "before": [
+          "index := -1",
+          "for i, item := range items {",
+          "  if item.ID == id {",
+          "    index = i",
+          "    break",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "index := slices.IndexFunc(items, func(item Item) bool {",
+          "  return item.ID == id",
+          "})"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_sort_func",
+    "since_version": "1.21",
+    "guideline": "Use slices.SortFunc with cmp.Compare instead of sort.Slice for typed comparisons.",
+    "details": "slices.SortFunc compares typed elements directly, avoiding sort.Slice closures that index back into the slice. cmp.Compare is the usual comparator for ordered fields.",
+    "examples": [
+      {
+        "before": [
+          "sort.Slice(items, func(i, j int) bool {",
+          "  return items[i].X < items[j].X",
+          "})"
+        ],
+        "after": [
+          "slices.SortFunc(items, func(a, b Item) int {",
+          "  return cmp.Compare(a.X, b.X)",
+          "})"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_sort",
+    "since_version": "1.21",
+    "guideline": "Use slices.Sort for slices of ordered values.",
+    "details": "slices.Sort is the generic sort for slices of ordered values. It replaces older type-specific helpers and simple sort.Slice calls.",
+    "examples": [
+      {
+        "before": [
+          "sort.Ints(values)"
+        ],
+        "after": [
+          "slices.Sort(values)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_max_min",
+    "since_version": "1.21",
+    "guideline": "Use slices.Max and slices.Min instead of manual loops over ordered values.",
+    "details": "slices.Max and slices.Min capture the common non-empty-slice scan for an ordered maximum or minimum. Keep explicit logic when empty slices or custom comparison rules need special handling.",
+    "examples": [
+      {
+        "before": [
+          "maxValue := values[0]",
+          "for _, value := range values[1:] {",
+          "  if value > maxValue {",
+          "    maxValue = value",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "maxValue := slices.Max(values)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_reverse",
+    "since_version": "1.21",
+    "guideline": "Use slices.Reverse instead of a manual swap loop.",
+    "details": "slices.Reverse performs an in-place reversal without hand-written index math. It is clearer and less error-prone than open-coded swap loops.",
+    "examples": [
+      {
+        "before": [
+          "for i, j := 0, len(items)-1; i < j; i, j = i+1, j-1 {",
+          "  items[i], items[j] = items[j], items[i]",
+          "}"
+        ],
+        "after": [
+          "slices.Reverse(items)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_compact",
+    "since_version": "1.21",
+    "guideline": "Use slices.Compact to remove consecutive duplicates in place.",
+    "details": "slices.Compact removes consecutive duplicate values in place. If the goal is to remove all duplicates, sort or otherwise group equal values first.",
+    "examples": [
+      {
+        "before": [
+          "out := values[:0]",
+          "for i, value := range values {",
+          "  if i == 0 || value != values[i-1] {",
+          "    out = append(out, value)",
+          "  }",
+          "}",
+          "values = out"
+        ],
+        "after": [
+          "values = slices.Compact(values)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_clip",
+    "since_version": "1.21",
+    "guideline": "Use slices.Clip to remove unused capacity.",
+    "details": "slices.Clip limits a slice's capacity to its length. Use it to stop retaining excess backing-array capacity or to prevent later appends from reusing hidden capacity.",
+    "examples": [
+      {
+        "before": [
+          "s = s[:len(s):len(s)]"
+        ],
+        "after": [
+          "s = slices.Clip(s)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slices_clone",
+    "since_version": "1.21",
+    "guideline": "Use slices.Clone to copy a slice.",
+    "details": "slices.Clone returns a shallow copy of a slice using the standard helper. It is clearer than append-copy boilerplate and preserves nil slices.",
+    "examples": [
+      {
+        "before": [
+          "copied := append([]T(nil), values...)"
+        ],
+        "after": [
+          "copied := slices.Clone(values)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maps_clone",
+    "since_version": "1.21",
+    "guideline": "Use maps.Clone instead of manual map iteration.",
+    "details": "maps.Clone returns a shallow copy of a map using the standard helper. It preserves nil maps and makes the copy operation explicit.",
+    "examples": [
+      {
+        "before": [
+          "copied := make(map[string]int, len(src))",
+          "for k, v := range src {",
+          "  copied[k] = v",
+          "}"
+        ],
+        "after": [
+          "copied := maps.Clone(src)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maps_copy",
+    "since_version": "1.21",
+    "guideline": "Use maps.Copy to copy entries from one map into another.",
+    "details": "maps.Copy copies all entries from one map into another, overwriting existing keys in the destination. It replaces loops whose body only assigns dst[k] = v.",
+    "examples": [
+      {
+        "before": [
+          "for k, v := range src {",
+          "  dst[k] = v",
+          "}"
+        ],
+        "after": [
+          "maps.Copy(dst, src)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maps_delete_func",
+    "since_version": "1.21",
+    "guideline": "Use maps.DeleteFunc to delete map entries that match a predicate.",
+    "details": "maps.DeleteFunc deletes entries selected by a predicate. It keeps the filtering condition in one callback and avoids hand-written delete loops.",
+    "examples": [
+      {
+        "before": [
+          "for k, v := range m {",
+          "  if shouldDelete(k, v) {",
+          "    delete(m, k)",
+          "  }",
+          "}"
+        ],
+        "after": [
+          "maps.DeleteFunc(m, func(k string, v int) bool {",
+          "  return shouldDelete(k, v)",
+          "})"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sync_once_func",
+    "since_version": "1.21",
+    "guideline": "Use sync.OnceFunc instead of sync.Once plus a wrapper closure.",
+    "details": "sync.OnceFunc wraps a function so that the returned function runs it at most once. It is a compact fit for idempotent cleanup or one-time initialization hooks.",
+    "examples": [
+      {
+        "before": [
+          "var once sync.Once",
+          "cleanup := func() {",
+          "  once.Do(func() {",
+          "    close(ch)",
+          "  })",
+          "}"
+        ],
+        "after": [
+          "cleanup := sync.OnceFunc(func() {",
+          "  close(ch)",
+          "})"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sync_once_value",
+    "since_version": "1.21",
+    "guideline": "Use sync.OnceValue to memoize a computed value.",
+    "details": "sync.OnceValue memoizes a computed value safely across goroutines. It replaces a sync.Once plus a separate result variable and getter closure.",
+    "examples": [
+      {
+        "before": [
+          "var once sync.Once",
+          "var value T",
+          "getter := func() T {",
+          "  once.Do(func() {",
+          "    value = computeValue()",
+          "  })",
+          "  return value",
+          "}"
+        ],
+        "after": [
+          "getter := sync.OnceValue(func() T {",
+          "  return computeValue()",
+          "})"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "context_after_func",
+    "since_version": "1.21",
+    "guideline": "Use context.AfterFunc to run cleanup when a context is canceled.",
+    "details": "context.AfterFunc registers work to run after cancellation and returns a stop function. It avoids starting a goroutine whose only job is to wait on ctx.Done.",
+    "examples": [
+      {
+        "before": [
+          "go func() {",
+          "  <-ctx.Done()",
+          "  cleanup()",
+          "}()"
+        ],
+        "after": [
+          "stop := context.AfterFunc(ctx, cleanup)",
+          "defer stop()"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "context_timeout_deadline_cause",
+    "since_version": "1.21",
+    "guideline": "Use timeout and deadline contexts with causes when callers need to inspect the cancellation reason.",
+    "details": "Timeout and deadline causes let callers distinguish the reason for cancellation with context.Cause. Use them when ctx.Err is too coarse for diagnostics or control flow.",
+    "examples": [
+      {
+        "before": [
+          "ctx, cancel := context.WithTimeout(parent, d)",
+          "defer cancel()"
+        ],
+        "after": [
+          "ctx, cancel := context.WithTimeoutCause(parent, d, errTimeout)",
+          "defer cancel()"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strings_clone",
+    "since_version": "1.20",
+    "guideline": "Use strings.Clone to copy a string without retaining shared backing memory.",
+    "details": "strings.Clone forces a string copy. Use it when retaining a small string derived from a much larger string would otherwise keep the larger backing memory alive.",
+    "examples": [
+      {
+        "before": [
+          "copied := string([]byte(s))"
+        ],
+        "after": [
+          "copied := strings.Clone(s)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bytes_clone",
+    "since_version": "1.20",
+    "guideline": "Use bytes.Clone to copy a byte slice.",
+    "details": "bytes.Clone communicates that a new byte slice is required. It avoids append-copy boilerplate and preserves the standard library's nil-slice behavior.",
+    "examples": [
+      {
+        "before": [
+          "copied := append([]byte(nil), b...)"
+        ],
+        "after": [
+          "copied := bytes.Clone(b)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strings_cut_prefix_suffix",
+    "since_version": "1.20",
+    "guideline": "Use strings.CutPrefix or strings.CutSuffix when you need both the trimmed result and whether it matched.",
+    "details": "CutPrefix and CutSuffix combine the match check and trimming operation. They avoid writing HasPrefix or HasSuffix followed by a second operation that repeats the same condition.",
+    "examples": [
+      {
+        "before": [
+          "if strings.HasPrefix(s, \"pre:\") {",
+          "  rest := strings.TrimPrefix(s, \"pre:\")",
+          "  use(rest)",
+          "}"
+        ],
+        "after": [
+          "if rest, ok := strings.CutPrefix(s, \"pre:\"); ok {",
+          "  use(rest)",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "errors_join",
+    "since_version": "1.20",
+    "guideline": "Use errors.Join to combine multiple errors while preserving error matching.",
+    "details": "errors.Join combines multiple non-nil errors while preserving error matching through errors.Is and errors.As. It returns nil when there are no non-nil errors.",
+    "examples": [
+      {
+        "before": [
+          "if err1 != nil && err2 != nil {",
+          "  return fmt.Errorf(\"%v; %w\", err1, err2)",
+          "}"
+        ],
+        "after": [
+          "return errors.Join(err1, err2)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "context_cancel_cause",
+    "since_version": "1.20",
+    "guideline": "Use context.WithCancelCause and context.Cause when cancellation needs to carry an error cause.",
+    "details": "Cancellation causes let code record why a context was canceled. Callers can inspect context.Cause(ctx) instead of only seeing the broad ctx.Err result.",
+    "examples": [
+      {
+        "before": [
+          "ctx, cancel := context.WithCancel(parent)",
+          "cancel()"
+        ],
+        "after": [
+          "ctx, cancel := context.WithCancelCause(parent)",
+          "cancel(err)",
+          "cause := context.Cause(ctx)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fmt_appendf",
+    "since_version": "1.19",
+    "guideline": "Use fmt.Appendf when appending formatted text to a byte slice and an intermediate fmt.Sprintf string is unnecessary.",
+    "details": "fmt.Appendf writes formatted output directly into a byte slice. It is useful when code is already accumulating []byte and the extra string allocation from fmt.Sprintf is not needed.",
+    "examples": [
+      {
+        "before": [
+          "buf = append(buf, []byte(fmt.Sprintf(\"x=%d\", x))...)"
+        ],
+        "after": [
+          "buf = fmt.Appendf(buf, \"x=%d\", x)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "atomic_types",
+    "since_version": "1.19",
+    "guideline": "Use typed atomics such as atomic.Bool, atomic.Int64, and atomic.Pointer[T] instead of untyped atomic functions.",
+    "details": "Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls.",
+    "examples": [
+      {
+        "before": [
+          "var enabled int32",
+          "atomic.StoreInt32(&enabled, 1)",
+          "if atomic.LoadInt32(&enabled) != 0 {",
+          "  run()",
+          "}"
+        ],
+        "after": [
+          "var enabled atomic.Bool",
+          "enabled.Store(true)",
+          "if enabled.Load() {",
+          "  run()",
+          "}"
+        ]
+      },
+      {
+        "before": [
+          "var ptr unsafe.Pointer",
+          "atomic.StorePointer(&ptr, unsafe.Pointer(cfg))"
+        ],
+        "after": [
+          "var ptr atomic.Pointer[Config]",
+          "ptr.Store(cfg)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "any",
+    "since_version": "1.18",
+    "guideline": "Use any instead of interface{}.",
+    "details": "any is the built-in alias for interface{} introduced with generics. Use it for unconstrained values and type parameters so the code reads in current Go terminology.",
+    "examples": [
+      {
+        "before": [
+          "func Decode(v interface{}) error {",
+          "  return nil",
+          "}"
+        ],
+        "after": [
+          "func Decode(v any) error {",
+          "  return nil",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bytes_cut",
+    "since_version": "1.18",
+    "guideline": "Use bytes.Cut instead of bytes.Index plus manual slicing.",
+    "details": "bytes.Cut returns before, after, and found in one call. It avoids duplicated Index checks and separator-length arithmetic while returning slices of the original byte slice.",
+    "examples": [
+      {
+        "before": [
+          "i := bytes.Index(b, sep)",
+          "if i < 0 {",
+          "  return nil, nil, false",
+          "}",
+          "before, after := b[:i], b[i+len(sep):]"
+        ],
+        "after": [
+          "before, after, found := bytes.Cut(b, sep)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strings_cut",
+    "since_version": "1.18",
+    "guideline": "Use strings.Cut instead of strings.Index plus manual slicing.",
+    "details": "strings.Cut returns before, after, and found in one call. It makes split-at-first-separator logic explicit and removes manual Index checks and slicing.",
+    "examples": [
+      {
+        "before": [
+          "i := strings.Index(s, \":\")",
+          "if i < 0 {",
+          "  return \"\", \"\", false",
+          "}",
+          "key, value := s[:i], s[i+1:]"
+        ],
+        "after": [
+          "key, value, found := strings.Cut(s, \":\")"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "errors_is",
+    "since_version": "1.13",
+    "guideline": "Use errors.Is(err, target) instead of err == target so wrapped errors are handled correctly.",
+    "details": "errors.Is walks wrapped errors and honors custom Is methods. Direct equality only matches the exact sentinel value and misses errors wrapped with fmt.Errorf or custom wrappers.",
+    "examples": [
+      {
+        "before": [
+          "if err == os.ErrNotExist {",
+          "  return nil",
+          "}"
+        ],
+        "after": [
+          "if errors.Is(err, os.ErrNotExist) {",
+          "  return nil",
+          "}"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "time_until",
+    "since_version": "1.8",
+    "guideline": "Use time.Until(deadline) instead of deadline.Sub(time.Now()).",
+    "details": "time.Until is the standard spelling for remaining time before a deadline. It is equivalent to deadline.Sub(time.Now()) but reads in the direction the caller cares about.",
+    "examples": [
+      {
+        "before": [
+          "remaining := deadline.Sub(time.Now())"
+        ],
+        "after": [
+          "remaining := time.Until(deadline)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "time_since",
+    "since_version": "1.0",
+    "guideline": "Use time.Since(start) instead of time.Now().Sub(start).",
+    "details": "time.Since is the standard spelling for elapsed time from a recorded start. It keeps the time.Now call inside the time package helper and makes the intent easier to scan.",
+    "examples": [
+      {
+        "before": [
+          "elapsed := time.Now().Sub(start)"
+        ],
+        "after": [
+          "elapsed := time.Since(start)"
+        ]
+      }
+    ]
+  }
+]
