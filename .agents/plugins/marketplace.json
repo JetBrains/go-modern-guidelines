@@ -8,7 +8,7 @@
       "name": "modern-go-guidelines",
       "source": {
         "source": "local",
-        "path": "./plugins/codex/modern-go-guidelines"
+        "path": "./plugin"
       },
       "policy": {
         "installation": "AVAILABLE",
