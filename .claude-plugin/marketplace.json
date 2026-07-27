@@ -6,17 +6,12 @@
   },
   "metadata": {
     "description": "Marketplace for Golang Claude Code extensions",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "modern-go-guidelines",
-      "description": "Enhances Claude Code with modern Go guidelines up to go 1.26 version.",
-      "author": {
-        "name": "JetBrains, GoLand Team",
-        "email": "goland@jetbrains.com"
-      },
-      "source": "./plugins/claude/modern-go-guidelines"
+      "source": "./plugin"
     }
   ]
 }

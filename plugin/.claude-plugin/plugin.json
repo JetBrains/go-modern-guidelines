@@ -1,0 +1,11 @@
+{
+  "name": "modern-go-guidelines",
+  "description": "Helps Claude Code write modern, idiomatic Go.",
+  "version": "1.1.0",
+  "author": {
+    "name": "JetBrains, GoLand Team",
+    "email": "goland@jetbrains.com"
+  },
+  "keywords": ["go", "golang", "go-best-practices", "guidelines", "modernize"],
+  "skills": "./skills/"
+}

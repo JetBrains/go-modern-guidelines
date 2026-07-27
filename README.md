@@ -2,11 +2,11 @@
 
 # Modern Go Guidelines
 
-This repository contains [guidelines](https://github.com/JetBrains/go-modern-guidelines/blob/main/skills/use-modern-go/SKILL.md) for code agents that help them write modern Go code.
+This repository contains [guidelines](https://github.com/JetBrains/go-modern-guidelines/blob/main/plugin/skills/use-modern-go/SKILL.md) for code agents that help them write modern Go code.
 
 For example, an agent with these guidelines uses `max(a, b)` instead of an if-else block, `slices.Contains` instead of a manual loop, `cmp.Or(a, b, c)` instead of a chain of nil checks. It also knows about recent additions like `new(42)` to get a pointer to a value and `errors.AsType[T](err)` for type-safe error matching—both from Go 1.26.
 
-The guidelines cover the most useful features from Go 1.0 through Go 1.26, including everything targeted by the `modernize` analyzer. An agent will:
+The guidelines cover the most useful features from Go 1.0 through Go 1.27, including everything targeted by the `modernize` analyzer. An agent will:
 
 - Detect the project's Go version from `go.mod`
 - Use language features and stdlib additions available up to and including that version
@@ -23,6 +23,12 @@ All coding agents tend to generate outdated Go. Two reasons:
 These guidelines fix both problems by giving the agent an explicit reference.
 
 This aligns with the Go team's direction. The `modernize` analyzer exists to automatically update existing code to use newer idioms (see [this talk](https://www.youtube.com/watch?v=_VePjjjV9JU) from the Go team). These guidelines serve the same goal for new code: agents write modern Go from the start, so there's less to fix later.
+
+## Requirements
+
+Apart from Junie (which ships the guidelines built in), the integrations run a small CLI that is installed on first use with `go install`. Because of that, the [Go toolchain](https://go.dev/dl/) must be installed and available on your `PATH`.
+
+The CLI is installed into a local cache (for example `~/.cache/go-modern-guidelines`) and never modifies your project. It targets **Go 1.25 or newer**; on an older Go it still works as long as automatic toolchain switching is enabled (`GOTOOLCHAIN=auto`, the default), which lets Go fetch a compatible toolchain on first run.
 
 ## Instructions
 
@@ -112,3 +118,32 @@ npx skills add JetBrains/go-modern-guidelines
 ```
 
 (`--skill use-modern-go` installs only this skill.)
+
+## Local development
+
+To try changes to the CLI in your agent, build this checkout into the tool's cache:
+
+```bash
+make dev-install
+```
+
+Then set `GO_MODERN_GUIDELINES_DEV=1` in the environment your agent runs in. With it set, any agent using the plugin runs your local build instead of the released version, the same way across Claude Code, Codex, and Cursor. Export it before launching the agent so the agent process inherits it:
+
+```bash
+export GO_MODERN_GUIDELINES_DEV=1
+```
+
+After editing the CLI, run `make dev-install` again to rebuild; the next call picks it up. To go back to the released version, unset the variable (or run `make dev-uninstall` to remove the build):
+
+```bash
+make dev-uninstall
+```
+
+This requires the Go toolchain. The dev build is stored in the tool's cache directory (`$XDG_CACHE_HOME/go-modern-guidelines` or `~/.cache/go-modern-guidelines`).
+
+The build is driven by `scripts/dev-install.sh`, which is intentionally separate from the agent-facing wrapper so an agent can never trigger a build. Without `make` (for example on Windows) you can run it directly:
+
+```bash
+sh scripts/dev-install.sh install       # or: uninstall
+pwsh scripts/dev-install.ps1 install    # PowerShell equivalent
+```
