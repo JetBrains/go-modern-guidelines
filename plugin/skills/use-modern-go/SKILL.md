@@ -9,7 +9,7 @@ Always write modern, idiomatic Go code. Use the Modern Go Guidelines CLI as the 
 
 Command:
 
-- Linux or macOS: `"<skill-dir>/scripts/run-tool.sh"`
+- Linux or macOS: `sh "<skill-dir>/scripts/run-tool.sh"`
 - Windows PowerShell: `'<skill-dir>\scripts\run-tool.ps1'`
 
 First run and approvals:
@@ -28,7 +28,7 @@ Before editing Go code:
    Prefer passing the file you are about to edit:
 
    ```sh
-   "<skill-dir>/scripts/run-tool.sh" list --file-path path/to/file.go
+   sh "<skill-dir>/scripts/run-tool.sh" list --file-path path/to/file.go
    ```
 
    On Windows, use the PowerShell wrapper with the same arguments.
@@ -38,7 +38,7 @@ Before editing Go code:
 2. If the target Go version is already known, you may pass it directly:
 
    ```sh
-   "<skill-dir>/scripts/run-tool.sh" list --go-version 1.24
+   sh "<skill-dir>/scripts/run-tool.sh" list --go-version 1.24
    ```
 
 3. Read the complete list output before deciding which guidelines apply.
@@ -54,13 +54,13 @@ Before editing Go code:
 Call `explain` only when a specific guideline may apply and you need the detailed explanation or examples. Request only the guideline IDs you intend to evaluate or apply:
 
 ```sh
-"<skill-dir>/scripts/run-tool.sh" explain sync_waitgroup_go
+sh "<skill-dir>/scripts/run-tool.sh" explain sync_waitgroup_go
 ```
 
 Multiple guideline IDs may be requested as positional arguments:
 
 ```sh
-"<skill-dir>/scripts/run-tool.sh" explain atomic_types errors_as_type
+sh "<skill-dir>/scripts/run-tool.sh" explain atomic_types errors_as_type
 ```
 
 Do not call `explain` without guideline IDs. Use `list` first to discover the short guideline list for the target Go version, then call `explain` for the specific returned IDs that need more context.
