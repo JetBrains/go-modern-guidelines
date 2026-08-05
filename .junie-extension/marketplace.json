@@ -1,0 +1,32 @@
+{
+  "name": "goland-junie-marketplace",
+  "owner": {
+    "name": "JetBrains, GoLand Team",
+    "email": "goland@jetbrains.com"
+  },
+  "metadata": {
+    "description": "Marketplace for Go coding agent extensions",
+    "version": "1.1.0",
+    "homepage": "https://github.com/JetBrains/go-modern-guidelines"
+  },
+  "extensions": [
+    {
+      "name": "modern-go-guidelines",
+      "source": "./plugin",
+      "description": "Helps Junie write modern, idiomatic Go.",
+      "version": "1.1.0",
+      "author": {
+        "name": "JetBrains, GoLand Team"
+      },
+      "category": "language",
+      "homepage": "https://github.com/JetBrains/go-modern-guidelines",
+      "keywords": [
+        "go",
+        "golang",
+        "go-best-practices",
+        "guidelines",
+        "modernize"
+      ]
+    }
+  ]
+}

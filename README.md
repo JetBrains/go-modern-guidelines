@@ -26,7 +26,7 @@ This aligns with the Go team's direction. The `modernize` analyzer exists to aut
 
 ## Requirements
 
-Apart from Junie (which ships the guidelines built in), the integrations run a small CLI that is installed on first use with `go install`. Because of that, the [Go toolchain](https://go.dev/dl/) must be installed and available on your `PATH`.
+The marketplace integrations run a small CLI that is installed on first use with `go install`. Because of that, the [Go toolchain](https://go.dev/dl/) must be installed and available on your `PATH`.
 
 The CLI is installed into a local cache (for example `~/.cache/go-modern-guidelines`) and never modifies your project. It targets **Go 1.25 or newer**; on an older Go it still works as long as automatic toolchain switching is enabled (`GOTOOLCHAIN=auto`, the default), which lets Go fetch a compatible toolchain on first run.
 
@@ -36,15 +36,29 @@ The guidelines are available for Junie, Claude Code, Codex, and Cursor, and for 
 
 ### [Junie](https://junie.jetbrains.com)
 
-Starting with version 2xx.620.xx, Junie includes the modern Go guidelines out of the box. No manual setup is required — just make sure you're running a compatible version.
+#### Junie CLI
 
-#### Updating Junie
+Run the following commands inside a Junie CLI session.
 
-Go to **Settings → Plugins → Installed**, find Junie, and click **Update** if a newer version is available.
+1. Add this repository as a marketplace:
+```
+/extensions marketplace add JetBrains/go-modern-guidelines
+```
 
-#### Configuration
+2. Install the extension:
+```
+/extensions install modern-go-guidelines
+```
 
-The guidelines are controlled via **Settings → Tools → Junie → Project Settings → Go**. The **Provide modern Go guidelines** option is enabled by default. Disable it if you prefer Junie to generate code without these guidelines.
+Junie invokes the skill automatically when it is relevant to a Go task.
+
+#### Updating
+
+Update the installed extension from inside a Junie CLI session:
+
+```
+/extensions update modern-go-guidelines
+```
 
 ### [Claude Code](https://claude.com/product/claude-code)
 
@@ -81,6 +95,27 @@ If you'd prefer a different target version, just let me know.
 
 After this, any Go code the agent writes will follow the guidelines.
 
+#### Updating
+
+Claude Code can update the marketplace and installed plugin automatically at startup. Automatic updates are disabled by default for third-party marketplaces, so enable them once:
+
+1. Run `/plugin`.
+2. Open **Marketplaces** and select `goland-claude-marketplace`.
+3. Select **Enable auto-update**.
+
+When Claude Code reports that the plugin was updated, apply the new version to the current session with:
+
+```
+/reload-plugins
+```
+
+To update it manually instead, run these commands in a terminal:
+
+```bash
+claude plugin marketplace update goland-claude-marketplace
+claude plugin update modern-go-guidelines@goland-claude-marketplace
+```
+
 ### [Codex](https://developers.openai.com/codex/)
 
 #### Installation
@@ -93,6 +128,16 @@ codex plugin marketplace add JetBrains/go-modern-guidelines
 
 2. Install the plugin:
 ```
+codex plugin add modern-go-guidelines@goland-codex-marketplace
+```
+
+#### Updating
+
+Refresh the marketplace and reinstall the plugin so Codex replaces its cached copy:
+
+```bash
+codex plugin marketplace upgrade goland-codex-marketplace
+codex plugin remove modern-go-guidelines@goland-codex-marketplace
 codex plugin add modern-go-guidelines@goland-codex-marketplace
 ```
 
@@ -109,6 +154,16 @@ cursor-agent plugin marketplace add https://github.com/JetBrains/go-modern-guide
 
 2. Install the plugin with the `/plugins` command inside a Cursor session.
 
+#### Updating
+
+Refresh the marketplace from Git and reopen Cursor so it can pick up the new plugin version:
+
+```bash
+cursor-agent plugin marketplace update goland-cursor-marketplace
+```
+
+If the installed plugin is still on the previous version, reinstall it with the `/plugins` command. Cursor does not currently provide a non-interactive CLI command for updating an installed plugin.
+
 ### Other Agents (via [skills.sh](https://skills.sh))
 
 The same skill package works across other agents such as OpenCode. Install it with:
@@ -118,6 +173,16 @@ npx skills add JetBrains/go-modern-guidelines
 ```
 
 (`--skill use-modern-go` installs only this skill.)
+
+#### Updating
+
+Update the project-installed skill with:
+
+```bash
+npx skills update use-modern-go -p -y
+```
+
+For a globally installed skill, replace `-p` with `-g`.
 
 ## Local development
 
