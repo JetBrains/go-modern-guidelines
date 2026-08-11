@@ -72,28 +72,18 @@ Run the following commands inside a Claude Code session.
 
 2. Install the plugin:
 ```
-/plugin install modern-go-guidelines
+/plugin install modern-go-guidelines@goland-claude-marketplace
 ```
 
 #### Usage
 
-The plugin adds the `/use-modern-go` command. Run it at the start of a session to activate the guidelines:
+Claude Code invokes the skill automatically when it is relevant to a Go task.
+
+To invoke it explicitly:
 
 ```
-/use-modern-go
+/modern-go-guidelines:use-modern-go
 ```
-
-The command detects the Go version from `go.mod` and tells the agent to use features up to that version:
-
-```
-> /use-modern-go
-
-This project is using Go 1.24, so I'll stick to modern Go best practices
-and freely use language features up to and including this version.
-If you'd prefer a different target version, just let me know.
-```
-
-After this, any Go code the agent writes will follow the guidelines.
 
 #### Updating
 
