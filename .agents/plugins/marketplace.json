@@ -1,7 +1,7 @@
 {
   "name": "goland-codex-marketplace",
   "interface": {
-    "displayName": "GoLand Codex Marketplace"
+    "displayName": "GoLand Agent Plugins"
   },
   "plugins": [
     {
