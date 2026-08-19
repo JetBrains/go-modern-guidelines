@@ -1,6 +1,6 @@
 {
   "name": "modern-go-guidelines",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Helps coding agents write modern, idiomatic Go.",
   "author": {
     "name": "JetBrains, GoLand Team",

@@ -1,6 +1,6 @@
 ---
 name: use-modern-go
-description: Use the Modern Go Guidelines CLI when writing or modifying Go code.
+description: Use the Modern Go Guidelines CLI whenever writing, modifying, fixing, or refactoring Go code. Apply its version-specific guidance to generated changes.
 ---
 
 # Modern Go Guidelines CLI
