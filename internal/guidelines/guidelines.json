@@ -40,6 +40,109 @@
     ]
   },
   {
+    "id": "json_v2",
+    "since_version": "1.27",
+    "guideline": "Use encoding/json/v2 for new JSON code in Go 1.27+; leave existing encoding/json code unchanged unless migration is explicitly requested.",
+    "details": "encoding/json/v2 has stricter, more interoperable defaults: it rejects invalid UTF-8 and duplicate object names, encodes nil slices and maps as empty arrays and objects, and reports invalid JSON-related Go types. Prefer these defaults in new code. Do not replace encoding/json in existing code unless migration is explicitly requested, because even a compiling import change can alter wire behavior. For an explicit migration, begin with jsonv1.DefaultOptionsV1(), test serialized output and accepted input, then remove or override compatibility options deliberately; later options take precedence.",
+    "examples": [
+      {
+        "before": [
+          "import \"encoding/json\"",
+          "",
+          "type Pet struct {",
+          "  Name      string",
+          "  Nicknames []string",
+          "}",
+          "",
+          "body, err := json.Marshal(Pet{Name: \"Remi\"})",
+          "// body is {\"Name\":\"Remi\",\"Nicknames\":null}"
+        ],
+        "after": [
+          "import \"encoding/json/v2\"",
+          "",
+          "type Pet struct {",
+          "  Name      string",
+          "  Nicknames []string",
+          "}",
+          "",
+          "// New code uses v2's stricter defaults.",
+          "body, err := json.Marshal(Pet{Name: \"Remi\"})",
+          "// body is {\"Name\":\"Remi\",\"Nicknames\":[]}"
+        ]
+      },
+      {
+        "before": [
+          "import \"encoding/json\"",
+          "",
+          "type Pet struct {",
+          "  Name      string",
+          "  Nicknames []string",
+          "}",
+          "",
+          "// Leave existing v1 code unchanged unless migration is requested.",
+          "body, err := json.Marshal(Pet{Name: \"Remi\"})",
+          "// Existing consumers receive {\"Name\":\"Remi\",\"Nicknames\":null}."
+        ],
+        "after": [
+          "import (",
+          "  jsonv1 \"encoding/json\"",
+          "  json \"encoding/json/v2\"",
+          ")",
+          "",
+          "type Pet struct {",
+          "  Name      string",
+          "  Nicknames []string",
+          "}",
+          "",
+          "// For an explicit migration, retain existing wire behavior first.",
+          "body, err := json.Marshal(",
+          "  Pet{Name: \"Remi\"},",
+          "  jsonv1.DefaultOptionsV1(),",
+          ")",
+          "// Existing consumers still receive {\"Name\":\"Remi\",\"Nicknames\":null}."
+        ]
+      },
+      {
+        "before": [
+          "import (",
+          "  jsonv1 \"encoding/json\"",
+          "  json \"encoding/json/v2\"",
+          ")",
+          "",
+          "type Pet struct {",
+          "  Name      string",
+          "  Nicknames []string",
+          "}",
+          "",
+          "body, err := json.Marshal(",
+          "  Pet{Name: \"Remi\"},",
+          "  jsonv1.DefaultOptionsV1(),",
+          ")",
+          "// body is {\"Name\":\"Remi\",\"Nicknames\":null}"
+        ],
+        "after": [
+          "import (",
+          "  jsonv1 \"encoding/json\"",
+          "  json \"encoding/json/v2\"",
+          ")",
+          "",
+          "type Pet struct {",
+          "  Name      string",
+          "  Nicknames []string",
+          "}",
+          "",
+          "// Then adopt v2 behavior only after verifying consumers.",
+          "body, err := json.Marshal(",
+          "  Pet{Name: \"Remi\"},",
+          "  jsonv1.DefaultOptionsV1(),",
+          "  json.FormatNilSliceAsNull(false),",
+          ")",
+          "// body is {\"Name\":\"Remi\",\"Nicknames\":[]}"
+        ]
+      }
+    ]
+  },
+  {
     "id": "promoted_field_literals",
     "since_version": "1.27",
     "guideline": "Set embedded struct fields directly with promoted field names in Go 1.27+ struct literals instead of constructing the embedded struct explicitly.",
