@@ -10,30 +10,30 @@
           "type Set[T comparable] map[T]struct{}",
           "",
           "func Map[T comparable, U any](s Set[T], f func(T) U) []U {",
-          "  out := make([]U, 0, len(s))",
-          "  for value := range s {",
-          "    out = append(out, f(value))",
-          "  }",
-          "  return out",
+          "\tout := make([]U, 0, len(s))",
+          "\tfor value := range s {",
+          "\t\tout = append(out, f(value))",
+          "\t}",
+          "\treturn out",
           "}",
           "",
           "names := Map(users, func(user User) string {",
-          "  return user.Name",
+          "\treturn user.Name",
           "})"
         ],
         "after": [
           "type Set[T comparable] map[T]struct{}",
           "",
           "func (s Set[T]) Map[U any](f func(T) U) []U {",
-          "  out := make([]U, 0, len(s))",
-          "  for value := range s {",
-          "    out = append(out, f(value))",
-          "  }",
-          "  return out",
+          "\tout := make([]U, 0, len(s))",
+          "\tfor value := range s {",
+          "\t\tout = append(out, f(value))",
+          "\t}",
+          "\treturn out",
           "}",
           "",
           "names := users.Map(func(user User) string {",
-          "  return user.Name",
+          "\treturn user.Name",
           "})"
         ]
       }
@@ -50,8 +50,8 @@
           "import \"encoding/json\"",
           "",
           "type Pet struct {",
-          "  Name      string",
-          "  Nicknames []string",
+          "\tName      string",
+          "\tNicknames []string",
           "}",
           "",
           "body, err := json.Marshal(Pet{Name: \"Remi\"})",
@@ -61,8 +61,8 @@
           "import \"encoding/json/v2\"",
           "",
           "type Pet struct {",
-          "  Name      string",
-          "  Nicknames []string",
+          "\tName      string",
+          "\tNicknames []string",
           "}",
           "",
           "// New code uses v2's stricter defaults.",
@@ -75,8 +75,8 @@
           "import \"encoding/json\"",
           "",
           "type Pet struct {",
-          "  Name      string",
-          "  Nicknames []string",
+          "\tName      string",
+          "\tNicknames []string",
           "}",
           "",
           "// Leave existing v1 code unchanged unless migration is requested.",
@@ -85,19 +85,19 @@
         ],
         "after": [
           "import (",
-          "  jsonv1 \"encoding/json\"",
-          "  json \"encoding/json/v2\"",
+          "\tjsonv1 \"encoding/json\"",
+          "\tjson \"encoding/json/v2\"",
           ")",
           "",
           "type Pet struct {",
-          "  Name      string",
-          "  Nicknames []string",
+          "\tName      string",
+          "\tNicknames []string",
           "}",
           "",
           "// For an explicit migration, retain existing wire behavior first.",
           "body, err := json.Marshal(",
-          "  Pet{Name: \"Remi\"},",
-          "  jsonv1.DefaultOptionsV1(),",
+          "\tPet{Name: \"Remi\"},",
+          "\tjsonv1.DefaultOptionsV1(),",
           ")",
           "// Existing consumers still receive {\"Name\":\"Remi\",\"Nicknames\":null}."
         ]
@@ -105,37 +105,37 @@
       {
         "before": [
           "import (",
-          "  jsonv1 \"encoding/json\"",
-          "  json \"encoding/json/v2\"",
+          "\tjsonv1 \"encoding/json\"",
+          "\tjson \"encoding/json/v2\"",
           ")",
           "",
           "type Pet struct {",
-          "  Name      string",
-          "  Nicknames []string",
+          "\tName      string",
+          "\tNicknames []string",
           "}",
           "",
           "body, err := json.Marshal(",
-          "  Pet{Name: \"Remi\"},",
-          "  jsonv1.DefaultOptionsV1(),",
+          "\tPet{Name: \"Remi\"},",
+          "\tjsonv1.DefaultOptionsV1(),",
           ")",
           "// body is {\"Name\":\"Remi\",\"Nicknames\":null}"
         ],
         "after": [
           "import (",
-          "  jsonv1 \"encoding/json\"",
-          "  json \"encoding/json/v2\"",
+          "\tjsonv1 \"encoding/json\"",
+          "\tjson \"encoding/json/v2\"",
           ")",
           "",
           "type Pet struct {",
-          "  Name      string",
-          "  Nicknames []string",
+          "\tName      string",
+          "\tNicknames []string",
           "}",
           "",
           "// Then adopt v2 behavior only after verifying consumers.",
           "body, err := json.Marshal(",
-          "  Pet{Name: \"Remi\"},",
-          "  jsonv1.DefaultOptionsV1(),",
-          "  json.FormatNilSliceAsNull(false),",
+          "\tPet{Name: \"Remi\"},",
+          "\tjsonv1.DefaultOptionsV1(),",
+          "\tjson.FormatNilSliceAsNull(false),",
           ")",
           "// body is {\"Name\":\"Remi\",\"Nicknames\":[]}"
         ]
@@ -151,42 +151,42 @@
       {
         "before": [
           "type AuditInfo struct {",
-          "  CreatedBy string",
-          "  UpdatedBy string",
+          "\tCreatedBy string",
+          "\tUpdatedBy string",
           "}",
           "",
           "type Document struct {",
-          "  AuditInfo",
-          "  Name string",
-          "  Path string",
+          "\tAuditInfo",
+          "\tName string",
+          "\tPath string",
           "}",
           "",
           "doc := Document{",
-          "  AuditInfo: AuditInfo{",
-          "    CreatedBy: \"alice\",",
-          "    UpdatedBy: \"alice\",",
-          "  },",
-          "  Name: \"report.pdf\",",
-          "  Path: \"/documents/report.pdf\",",
+          "\tAuditInfo: AuditInfo{",
+          "\t\tCreatedBy: \"alice\",",
+          "\t\tUpdatedBy: \"alice\",",
+          "\t},",
+          "\tName: \"report.pdf\",",
+          "\tPath: \"/documents/report.pdf\",",
           "}"
         ],
         "after": [
           "type AuditInfo struct {",
-          "  CreatedBy string",
-          "  UpdatedBy string",
+          "\tCreatedBy string",
+          "\tUpdatedBy string",
           "}",
           "",
           "type Document struct {",
-          "  AuditInfo",
-          "  Name string",
-          "  Path string",
+          "\tAuditInfo",
+          "\tName string",
+          "\tPath string",
           "}",
           "",
           "doc := Document{",
-          "  CreatedBy: \"alice\",",
-          "  UpdatedBy: \"alice\",",
-          "  Name:      \"report.pdf\",",
-          "  Path:      \"/documents/report.pdf\",",
+          "\tCreatedBy: \"alice\",",
+          "\tUpdatedBy: \"alice\",",
+          "\tName:      \"report.pdf\",",
+          "\tPath:      \"/documents/report.pdf\",",
           "}"
         ]
       }
@@ -202,7 +202,7 @@
         "before": [
           "i := strings.LastIndex(path, \"/\")",
           "if i < 0 {",
-          "  return \"\", path, false",
+          "\treturn \"\", path, false",
           "}",
           "dir, file := path[:i], path[i+1:]"
         ],
@@ -214,7 +214,7 @@
         "before": [
           "i := bytes.LastIndex(line, []byte(\":\"))",
           "if i < 0 {",
-          "  return nil, line, false",
+          "\treturn nil, line, false",
           "}",
           "name, value := line[:i], line[i+1:]"
         ],
@@ -248,13 +248,13 @@
         "before": [
           "id, err := googleuuid.Parse(raw)",
           "if err != nil {",
-          "  return err",
+          "\treturn err",
           "}"
         ],
         "after": [
           "id, err := uuid.Parse(raw)",
           "if err != nil {",
-          "  return err",
+          "\treturn err",
           "}"
         ]
       }
@@ -271,12 +271,12 @@
           "copy := new(url.URL)",
           "*copy = *base",
           "if base.User != nil {",
-          "  username := base.User.Username()",
-          "  if password, ok := base.User.Password(); ok {",
-          "    copy.User = url.UserPassword(username, password)",
-          "  } else {",
-          "    copy.User = url.User(username)",
-          "  }",
+          "\tusername := base.User.Username()",
+          "\tif password, ok := base.User.Password(); ok {",
+          "\t\tcopy.User = url.UserPassword(username, password)",
+          "\t} else {",
+          "\t\tcopy.User = url.User(username)",
+          "\t}",
           "}"
         ],
         "after": [
@@ -287,7 +287,7 @@
         "before": [
           "copy := make(url.Values, len(values))",
           "for key, items := range values {",
-          "  copy[key] = append([]string(nil), items...)",
+          "\tcopy[key] = append([]string(nil), items...)",
           "}"
         ],
         "after": [
@@ -299,40 +299,55 @@
   {
     "id": "new_expression",
     "since_version": "1.26",
-    "guideline": "Use new(value) for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for &value.",
-    "details": "new(value) creates a *T from a value expression. In struct literals, prefer Field: new(value) for pointer fields over helper calls whose only purpose is returning &value; keep helpers only when they add behavior.",
+    "guideline": "Use new(value) for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for &value; convert untyped constants to the target type first, because new(30) is a *int.",
+    "details": "new(value) creates a *T from a value expression. In struct literals, prefer Field: new(value) for pointer fields over helper calls whose only purpose is returning &value; keep helpers only when they add behavior. new uses the default type of an untyped constant, so new(30) yields *int and does not fit a *time.Duration or *int32 field; write new(30 * time.Second) or new(int32(30)) instead.",
     "examples": [
       {
         "before": [
+          "type Config struct {",
+          "\tTimeout *time.Duration",
+          "\tDebug   *bool",
+          "}",
+          "",
           "func Pointer[T any](value T) *T {",
-          "  return &value",
+          "\treturn &value",
           "}",
           "",
           "cfg := Config{",
-          "  Timeout: Pointer(30),",
-          "  Debug:   Pointer(true),",
+          "\tTimeout: Pointer(30 * time.Second),",
+          "\tDebug:   Pointer(true),",
           "}"
         ],
         "after": [
+          "type Config struct {",
+          "\tTimeout *time.Duration",
+          "\tDebug   *bool",
+          "}",
+          "",
           "cfg := Config{",
-          "  Timeout: new(30),",
-          "  Debug:   new(true),",
+          "\tTimeout: new(30 * time.Second),",
+          "\tDebug:   new(true),",
           "}"
         ]
       },
       {
         "before": [
-          "timeout := 30",
-          "debug := true",
+          "type Config struct {",
+          "\tRetries *int",
+          "}",
+          "",
+          "retries := 3",
           "cfg := Config{",
-          "  Timeout: &timeout,",
-          "  Debug:   &debug,",
+          "\tRetries: &retries,",
           "}"
         ],
         "after": [
+          "type Config struct {",
+          "\tRetries *int",
+          "}",
+          "",
           "cfg := Config{",
-          "  Timeout: new(30),",
-          "  Debug:   new(true),",
+          "\tRetries: new(3),",
           "}"
         ]
       }
@@ -348,12 +363,12 @@
         "before": [
           "var pathErr *os.PathError",
           "if errors.As(err, &pathErr) {",
-          "  handle(pathErr)",
+          "\thandle(pathErr)",
           "}"
         ],
         "after": [
           "if pathErr, ok := errors.AsType[*os.PathError](err); ok {",
-          "  handle(pathErr)",
+          "\thandle(pathErr)",
           "}"
         ]
       }
@@ -369,20 +384,20 @@
         "before": [
           "var wg sync.WaitGroup",
           "for _, item := range items {",
-          "  wg.Add(1)",
-          "  go func() {",
-          "    defer wg.Done()",
-          "    process(item)",
-          "  }()",
+          "\twg.Add(1)",
+          "\tgo func() {",
+          "\t\tdefer wg.Done()",
+          "\t\tprocess(item)",
+          "\t}()",
           "}",
           "wg.Wait()"
         ],
         "after": [
           "var wg sync.WaitGroup",
           "for _, item := range items {",
-          "  wg.Go(func() {",
-          "    process(item)",
-          "  })",
+          "\twg.Go(func() {",
+          "\t\tprocess(item)",
+          "\t})",
           "}",
           "wg.Wait()"
         ]
@@ -392,21 +407,21 @@
   {
     "id": "testing_t_context",
     "since_version": "1.24",
-    "guideline": "Use t.Context() when a test function needs a context tied to the test lifetime.",
-    "details": "t.Context returns a context tied to the test lifetime. It removes manual background context setup when helper work should stop as the test is ending.",
+    "guideline": "Use t.Context() when a test function needs a context tied to the test lifetime; it is already canceled by the time t.Cleanup functions run, so do not pass it to cleanup work.",
+    "details": "t.Context returns a context tied to the test lifetime. It removes manual background context setup when helper work should stop as the test is ending. The context is canceled before registered t.Cleanup functions run, so cleanup that needs a live context must create its own.",
     "examples": [
       {
         "before": [
           "func TestFoo(t *testing.T) {",
-          "  ctx, cancel := context.WithCancel(context.Background())",
-          "  defer cancel()",
-          "  result := doSomething(ctx)",
+          "\tctx, cancel := context.WithCancel(context.Background())",
+          "\tdefer cancel()",
+          "\tresult := doSomething(ctx)",
           "}"
         ],
         "after": [
           "func TestFoo(t *testing.T) {",
-          "  ctx := t.Context()",
-          "  result := doSomething(ctx)",
+          "\tctx := t.Context()",
+          "\tresult := doSomething(ctx)",
           "}"
         ]
       }
@@ -421,18 +436,18 @@
       {
         "before": [
           "type CacheEntry struct {",
-          "  Name      string    `json:\"name,omitempty\"`",
-          "  Warm      bool      `json:\"warm,omitempty\"`",
-          "  Hits      int64     `json:\"hits,omitempty\"`",
-          "  ExpiresAt time.Time `json:\"expiresAt,omitempty\"`",
+          "\tName      string    `json:\"name,omitempty\"`",
+          "\tWarm      bool      `json:\"warm,omitempty\"`",
+          "\tHits      int64     `json:\"hits,omitempty\"`",
+          "\tExpiresAt time.Time `json:\"expiresAt,omitempty\"`",
           "}"
         ],
         "after": [
           "type CacheEntry struct {",
-          "  Name      string    `json:\"name,omitempty\"`",
-          "  Warm      bool      `json:\"warm,omitzero\"`",
-          "  Hits      int64     `json:\"hits,omitzero\"`",
-          "  ExpiresAt time.Time `json:\"expiresAt,omitzero\"`",
+          "\tName      string    `json:\"name,omitempty\"`",
+          "\tWarm      bool      `json:\"warm,omitzero\"`",
+          "\tHits      int64     `json:\"hits,omitzero\"`",
+          "\tExpiresAt time.Time `json:\"expiresAt,omitzero\"`",
           "}"
         ]
       }
@@ -441,22 +456,22 @@
   {
     "id": "testing_b_loop",
     "since_version": "1.24",
-    "guideline": "Use b.Loop() for the main loop in benchmark functions.",
-    "details": "b.Loop is the modern benchmark loop. It manages benchmark iteration mechanics for you and can remove the need for manual timer control in the benchmark body.",
+    "guideline": "Use b.Loop() for the main loop in benchmark functions; the iteration count is not known before the loop runs, so a benchmark that sizes fixtures from b.N needs reworking rather than a mechanical loop swap.",
+    "details": "b.Loop is the modern benchmark loop. It manages benchmark iteration mechanics for you and can remove the need for manual timer control in the benchmark body. b.N holds the executed iteration count only after b.Loop returns false, so setup that allocates b.N elements before the loop has to be restructured instead of translated line by line.",
     "examples": [
       {
         "before": [
           "func BenchmarkFoo(b *testing.B) {",
-          "  for i := 0; i < b.N; i++ {",
-          "    doWork()",
-          "  }",
+          "\tfor i := 0; i < b.N; i++ {",
+          "\t\tdoWork()",
+          "\t}",
           "}"
         ],
         "after": [
           "func BenchmarkFoo(b *testing.B) {",
-          "  for b.Loop() {",
-          "    doWork()",
-          "  }",
+          "\tfor b.Loop() {",
+          "\t\tdoWork()",
+          "\t}",
           "}"
         ]
       }
@@ -471,24 +486,24 @@
       {
         "before": [
           "for _, part := range strings.Split(s, \",\") {",
-          "  process(part)",
+          "\tprocess(part)",
           "}"
         ],
         "after": [
           "for part := range strings.SplitSeq(s, \",\") {",
-          "  process(part)",
+          "\tprocess(part)",
           "}"
         ]
       },
       {
         "before": [
           "for _, field := range bytes.Fields(b) {",
-          "  process(field)",
+          "\tprocess(field)",
           "}"
         ],
         "after": [
           "for field := range bytes.FieldsSeq(b) {",
-          "  process(field)",
+          "\tprocess(field)",
           "}"
         ]
       }
@@ -503,12 +518,12 @@
       {
         "before": [
           "for k := range m {",
-          "  process(k)",
+          "\tprocess(k)",
           "}"
         ],
         "after": [
           "for k := range maps.Keys(m) {",
-          "  process(k)",
+          "\tprocess(k)",
           "}"
         ]
       }
@@ -524,7 +539,7 @@
         "before": [
           "keys := make([]string, 0, len(m))",
           "for k := range m {",
-          "  keys = append(keys, k)",
+          "\tkeys = append(keys, k)",
           "}"
         ],
         "after": [
@@ -543,7 +558,7 @@
         "before": [
           "keys := make([]string, 0, len(m))",
           "for k := range m {",
-          "  keys = append(keys, k)",
+          "\tkeys = append(keys, k)",
           "}",
           "slices.Sort(keys)"
         ],
@@ -564,12 +579,12 @@
           "ticker := time.NewTicker(time.Second)",
           "defer ticker.Stop()",
           "for range ticker.C {",
-          "  poll()",
+          "\tpoll()",
           "}"
         ],
         "after": [
           "for range time.Tick(time.Second) {",
-          "  poll()",
+          "\tpoll()",
           "}"
         ]
       }
@@ -584,12 +599,12 @@
       {
         "before": [
           "for i := 0; i < len(items); i++ {",
-          "  process(items[i])",
+          "\tprocess(items[i])",
           "}"
         ],
         "after": [
           "for i := range len(items) {",
-          "  process(items[i])",
+          "\tprocess(items[i])",
           "}"
         ]
       }
@@ -604,17 +619,17 @@
       {
         "before": [
           "for _, item := range items {",
-          "  item := item",
-          "  go func() {",
-          "    process(item)",
-          "  }()",
+          "\titem := item",
+          "\tgo func() {",
+          "\t\tprocess(item)",
+          "\t}()",
           "}"
         ],
         "after": [
           "for _, item := range items {",
-          "  go func() {",
-          "    process(item)",
-          "  }()",
+          "\tgo func() {",
+          "\t\tprocess(item)",
+          "\t}()",
           "}"
         ]
       },
@@ -622,18 +637,18 @@
         "before": [
           "var selected []*Item",
           "for _, item := range items {",
-          "  item := item",
-          "  if item.Enabled {",
-          "    selected = append(selected, &item)",
-          "  }",
+          "\titem := item",
+          "\tif item.Enabled {",
+          "\t\tselected = append(selected, &item)",
+          "\t}",
           "}"
         ],
         "after": [
           "var selected []*Item",
           "for _, item := range items {",
-          "  if item.Enabled {",
-          "    selected = append(selected, &item)",
-          "  }",
+          "\tif item.Enabled {",
+          "\t\tselected = append(selected, &item)",
+          "\t}",
           "}"
         ]
       }
@@ -642,14 +657,14 @@
   {
     "id": "cmp_or",
     "since_version": "1.22",
-    "guideline": "Use cmp.Or to pick the first non-zero value from a fallback chain.",
-    "details": "cmp.Or returns the first non-zero value from its arguments. It is concise for simple fallback chains, but remember that all arguments are evaluated before the call.",
+    "guideline": "Use cmp.Or to pick the first non-zero value from a fallback chain, but only when every argument is cheap and free of side effects, because all of them are evaluated.",
+    "details": "cmp.Or returns the first non-zero value from its arguments. All arguments are evaluated before the call, so it is the wrong choice when later entries are expensive or have side effects, and when a zero value such as false or 0 is a valid result rather than a missing one.",
     "examples": [
       {
         "before": [
           "name := os.Getenv(\"NAME\")",
           "if name == \"\" {",
-          "  name = \"default\"",
+          "\tname = \"default\"",
           "}"
         ],
         "after": [
@@ -677,23 +692,23 @@
   {
     "id": "http_servemux_patterns",
     "since_version": "1.22",
-    "guideline": "Use method-aware ServeMux patterns and r.PathValue for path parameters.",
-    "details": "The modern ServeMux pattern syntax can include an HTTP method and named path wildcards. r.PathValue retrieves wildcard values without manual path trimming.",
+    "guideline": "Use method-aware ServeMux patterns and r.PathValue for path parameters in new mux code; migrating an existing mux changes request matching, because a GET pattern also matches HEAD, conflicting patterns panic at registration, and the most specific pattern wins rather than the longest prefix.",
+    "details": "The modern ServeMux pattern syntax can include an HTTP method and named path wildcards. r.PathValue retrieves wildcard values without manual path trimming. Rewriting an existing mux is a behavior change, not a cleanup: a GET pattern also serves HEAD, ServeMux.Handle panics when a new pattern conflicts with a registered one, and precedence is by most specific pattern instead of longest registered prefix.",
     "examples": [
       {
         "before": [
           "mux.HandleFunc(\"/api/\", func(w http.ResponseWriter, r *http.Request) {",
-          "  if r.Method != http.MethodGet {",
-          "    http.Error(w, \"method not allowed\", http.StatusMethodNotAllowed)",
-          "    return",
-          "  }",
-          "  id := strings.TrimPrefix(r.URL.Path, \"/api/\")",
-          "  handleID(w, r, id)",
+          "\tif r.Method != http.MethodGet {",
+          "\t\thttp.Error(w, \"method not allowed\", http.StatusMethodNotAllowed)",
+          "\t\treturn",
+          "\t}",
+          "\tid := strings.TrimPrefix(r.URL.Path, \"/api/\")",
+          "\thandleID(w, r, id)",
           "})"
         ],
         "after": [
           "mux.HandleFunc(\"GET /api/{id}\", func(w http.ResponseWriter, r *http.Request) {",
-          "  handleID(w, r, r.PathValue(\"id\"))",
+          "\thandleID(w, r, r.PathValue(\"id\"))",
           "})"
         ]
       }
@@ -708,7 +723,7 @@
       {
         "before": [
           "if b > a {",
-          "  a = b",
+          "\ta = b",
           "}"
         ],
         "after": [
@@ -726,7 +741,7 @@
       {
         "before": [
           "for k := range m {",
-          "  delete(m, k)",
+          "\tdelete(m, k)",
           "}"
         ],
         "after": [
@@ -745,10 +760,10 @@
         "before": [
           "found := false",
           "for _, item := range items {",
-          "  if item == x {",
-          "    found = true",
-          "    break",
-          "  }",
+          "\tif item == x {",
+          "\t\tfound = true",
+          "\t\tbreak",
+          "\t}",
           "}"
         ],
         "after": [
@@ -767,10 +782,10 @@
         "before": [
           "index := -1",
           "for i, item := range items {",
-          "  if item == x {",
-          "    index = i",
-          "    break",
-          "  }",
+          "\tif item == x {",
+          "\t\tindex = i",
+          "\t\tbreak",
+          "\t}",
           "}"
         ],
         "after": [
@@ -789,15 +804,15 @@
         "before": [
           "index := -1",
           "for i, item := range items {",
-          "  if item.ID == id {",
-          "    index = i",
-          "    break",
-          "  }",
+          "\tif item.ID == id {",
+          "\t\tindex = i",
+          "\t\tbreak",
+          "\t}",
           "}"
         ],
         "after": [
           "index := slices.IndexFunc(items, func(item Item) bool {",
-          "  return item.ID == id",
+          "\treturn item.ID == id",
           "})"
         ]
       }
@@ -806,18 +821,18 @@
   {
     "id": "slices_sort_func",
     "since_version": "1.21",
-    "guideline": "Use slices.SortFunc with cmp.Compare instead of sort.Slice for typed comparisons.",
-    "details": "slices.SortFunc compares typed elements directly, avoiding sort.Slice closures that index back into the slice. cmp.Compare is the usual comparator for ordered fields.",
+    "guideline": "Use slices.SortFunc with cmp.Compare instead of sort.Slice for typed comparisons; replace sort.SliceStable with slices.SortStableFunc, because slices.SortFunc is not stable.",
+    "details": "slices.SortFunc compares typed elements directly, avoiding sort.Slice closures that index back into the slice. cmp.Compare is the usual comparator for ordered fields. slices.SortFunc is not stable, so code that relied on sort.SliceStable needs slices.SortStableFunc to keep equal elements in their original order.",
     "examples": [
       {
         "before": [
           "sort.Slice(items, func(i, j int) bool {",
-          "  return items[i].X < items[j].X",
+          "\treturn items[i].X < items[j].X",
           "})"
         ],
         "after": [
           "slices.SortFunc(items, func(a, b Item) int {",
-          "  return cmp.Compare(a.X, b.X)",
+          "\treturn cmp.Compare(a.X, b.X)",
           "})"
         ]
       }
@@ -849,9 +864,9 @@
         "before": [
           "maxValue := values[0]",
           "for _, value := range values[1:] {",
-          "  if value > maxValue {",
-          "    maxValue = value",
-          "  }",
+          "\tif value > maxValue {",
+          "\t\tmaxValue = value",
+          "\t}",
           "}"
         ],
         "after": [
@@ -869,7 +884,7 @@
       {
         "before": [
           "for i, j := 0, len(items)-1; i < j; i, j = i+1, j-1 {",
-          "  items[i], items[j] = items[j], items[i]",
+          "\titems[i], items[j] = items[j], items[i]",
           "}"
         ],
         "after": [
@@ -888,9 +903,9 @@
         "before": [
           "out := values[:0]",
           "for i, value := range values {",
-          "  if i == 0 || value != values[i-1] {",
-          "    out = append(out, value)",
-          "  }",
+          "\tif i == 0 || value != values[i-1] {",
+          "\t\tout = append(out, value)",
+          "\t}",
           "}",
           "values = out"
         ],
@@ -942,7 +957,7 @@
         "before": [
           "copied := make(map[string]int, len(src))",
           "for k, v := range src {",
-          "  copied[k] = v",
+          "\tcopied[k] = v",
           "}"
         ],
         "after": [
@@ -960,7 +975,7 @@
       {
         "before": [
           "for k, v := range src {",
-          "  dst[k] = v",
+          "\tdst[k] = v",
           "}"
         ],
         "after": [
@@ -978,14 +993,14 @@
       {
         "before": [
           "for k, v := range m {",
-          "  if shouldDelete(k, v) {",
-          "    delete(m, k)",
-          "  }",
+          "\tif shouldDelete(k, v) {",
+          "\t\tdelete(m, k)",
+          "\t}",
           "}"
         ],
         "after": [
           "maps.DeleteFunc(m, func(k string, v int) bool {",
-          "  return shouldDelete(k, v)",
+          "\treturn shouldDelete(k, v)",
           "})"
         ]
       }
@@ -1001,14 +1016,14 @@
         "before": [
           "var once sync.Once",
           "cleanup := func() {",
-          "  once.Do(func() {",
-          "    close(ch)",
-          "  })",
+          "\tonce.Do(func() {",
+          "\t\tclose(ch)",
+          "\t})",
           "}"
         ],
         "after": [
           "cleanup := sync.OnceFunc(func() {",
-          "  close(ch)",
+          "\tclose(ch)",
           "})"
         ]
       }
@@ -1025,15 +1040,15 @@
           "var once sync.Once",
           "var value T",
           "getter := func() T {",
-          "  once.Do(func() {",
-          "    value = computeValue()",
-          "  })",
-          "  return value",
+          "\tonce.Do(func() {",
+          "\t\tvalue = computeValue()",
+          "\t})",
+          "\treturn value",
           "}"
         ],
         "after": [
           "getter := sync.OnceValue(func() T {",
-          "  return computeValue()",
+          "\treturn computeValue()",
           "})"
         ]
       }
@@ -1048,8 +1063,8 @@
       {
         "before": [
           "go func() {",
-          "  <-ctx.Done()",
-          "  cleanup()",
+          "\t<-ctx.Done()",
+          "\tcleanup()",
           "}()"
         ],
         "after": [
@@ -1118,13 +1133,13 @@
       {
         "before": [
           "if strings.HasPrefix(s, \"pre:\") {",
-          "  rest := strings.TrimPrefix(s, \"pre:\")",
-          "  use(rest)",
+          "\trest := strings.TrimPrefix(s, \"pre:\")",
+          "\tuse(rest)",
           "}"
         ],
         "after": [
           "if rest, ok := strings.CutPrefix(s, \"pre:\"); ok {",
-          "  use(rest)",
+          "\tuse(rest)",
           "}"
         ]
       }
@@ -1139,7 +1154,7 @@
       {
         "before": [
           "if err1 != nil && err2 != nil {",
-          "  return fmt.Errorf(\"%v; %w\", err1, err2)",
+          "\treturn fmt.Errorf(\"%v; %w\", err1, err2)",
           "}"
         ],
         "after": [
@@ -1186,22 +1201,22 @@
   {
     "id": "atomic_types",
     "since_version": "1.19",
-    "guideline": "Use typed atomics such as atomic.Bool, atomic.Int64, and atomic.Pointer[T] instead of untyped atomic functions.",
-    "details": "Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls.",
+    "guideline": "Use typed atomics such as atomic.Bool, atomic.Int64, and atomic.Pointer[T] instead of untyped atomic functions in new code; converting existing fields changes struct layout, and atomic.Value and atomic.Pointer[T] differ in nil and type handling.",
+    "details": "Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls. Prefer them in new code: replacing a raw int64 or unsafe.Pointer field in an existing type changes its layout and size, and atomic.Value differs from atomic.Pointer[T] in nil and type handling, so migrate a type deliberately rather than call by call.",
     "examples": [
       {
         "before": [
           "var enabled int32",
           "atomic.StoreInt32(&enabled, 1)",
           "if atomic.LoadInt32(&enabled) != 0 {",
-          "  run()",
+          "\trun()",
           "}"
         ],
         "after": [
           "var enabled atomic.Bool",
           "enabled.Store(true)",
           "if enabled.Load() {",
-          "  run()",
+          "\trun()",
           "}"
         ]
       },
@@ -1226,12 +1241,12 @@
       {
         "before": [
           "func Decode(v interface{}) error {",
-          "  return nil",
+          "\treturn nil",
           "}"
         ],
         "after": [
           "func Decode(v any) error {",
-          "  return nil",
+          "\treturn nil",
           "}"
         ]
       }
@@ -1247,7 +1262,7 @@
         "before": [
           "i := bytes.Index(b, sep)",
           "if i < 0 {",
-          "  return nil, nil, false",
+          "\treturn nil, nil, false",
           "}",
           "before, after := b[:i], b[i+len(sep):]"
         ],
@@ -1267,7 +1282,7 @@
         "before": [
           "i := strings.Index(s, \":\")",
           "if i < 0 {",
-          "  return \"\", \"\", false",
+          "\treturn \"\", \"\", false",
           "}",
           "key, value := s[:i], s[i+1:]"
         ],
@@ -1286,12 +1301,12 @@
       {
         "before": [
           "if err == os.ErrNotExist {",
-          "  return nil",
+          "\treturn nil",
           "}"
         ],
         "after": [
           "if errors.Is(err, os.ErrNotExist) {",
-          "  return nil",
+          "\treturn nil",
           "}"
         ]
       }

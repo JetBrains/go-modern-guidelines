@@ -1,6 +1,9 @@
 package guidelines
 
 import (
+	"fmt"
+	"go/format"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -9,16 +12,16 @@ import (
 
 func TestListForResolvedVersion(t *testing.T) {
 	output := ListText("1.26")
-	if !strings.HasPrefix(output, "new_expression: Use new(value) for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for &value.") {
+	if !strings.HasPrefix(output, "new_expression: Use new(value) for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for &value; convert untyped constants to the target type first, because new(30) is a *int.") {
 		t.Fatalf("list output is not newest-first:\n%s", output)
 	}
 	for _, want := range []string{
 		"errors_as_type: Use errors.AsType[T](err) when checking whether an error matches a specific type.",
 		"sync_waitgroup_go: Use wg.Go when spawning goroutines tracked by a sync.WaitGroup.",
-		"cmp_or: Use cmp.Or to pick the first non-zero value from a fallback chain.",
+		"cmp_or: Use cmp.Or to pick the first non-zero value from a fallback chain, but only when every argument is cheap and free of side effects, because all of them are evaluated.",
 		"loopvar_capture: Do not add redundant loop-variable copies before closures or taking addresses; Go 1.22 gives each iteration its own variables.",
 		"maps_keys_values_iter: Use maps.Keys or maps.Values directly as iterators instead of manually looping over a map.",
-		"testing_t_context: Use t.Context() when a test function needs a context tied to the test lifetime.",
+		"testing_t_context: Use t.Context() when a test function needs a context tied to the test lifetime; it is already canceled by the time t.Cleanup functions run, so do not pass it to cleanup work.",
 		"json_omitzero: Use omitzero on JSON-tagged bool, numeric, struct, and time fields whose zero value should be omitted; keep omitempty for empty strings, slices, and maps.",
 	} {
 		if !strings.Contains(output, want) {
@@ -131,10 +134,10 @@ func TestExplainFormatting(t *testing.T) {
   Since: Go 1.19
 
   Summary:
-    Use typed atomics such as atomic.Bool, atomic.Int64, and atomic.Pointer[T] instead of untyped atomic functions.
+    Use typed atomics such as atomic.Bool, atomic.Int64, and atomic.Pointer[T] instead of untyped atomic functions in new code; converting existing fields changes struct layout, and atomic.Value and atomic.Pointer[T] differ in nil and type handling.
 
   Details:
-    Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls.
+    Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls. Prefer them in new code: replacing a raw int64 or unsafe.Pointer field in an existing type changes its layout and size, and atomic.Value differs from atomic.Pointer[T] in nil and type handling, so migrate a type deliberately rather than call by call.
 
   Examples:
 
@@ -144,14 +147,14 @@ func TestExplainFormatting(t *testing.T) {
     var enabled int32
     atomic.StoreInt32(&enabled, 1)
     if atomic.LoadInt32(&enabled) != 0 {
-      run()
+    	run()
     }
 
   After:
     var enabled atomic.Bool
     enabled.Store(true)
     if enabled.Load() {
-      run()
+    	run()
     }
 
   Example 2:
@@ -166,4 +169,123 @@ func TestExplainFormatting(t *testing.T) {
 	if output != want {
 		t.Fatalf("explain output mismatch\nwant:\n%s\ngot:\n%s", want, output)
 	}
+}
+
+// TestGuidelineExamplesAreFormattedGo checks that every example snippet parses as
+// Go and is stored in gofmt form, so explain output is a usable style reference.
+// Snippets are fragments, so each blank-line-separated block is formatted in
+// whichever context parses: package-level declarations or function body statements.
+func TestGuidelineExamplesAreFormattedGo(t *testing.T) {
+	toolchainVersion, ok := toolchainLanguageVersion()
+	if !ok {
+		t.Skipf("cannot determine toolchain Go version from %q", runtime.Version())
+	}
+
+	skipped := 0
+	for _, guideline := range modernGoGuidelines {
+		if goversion.Compare(toolchainVersion, guideline.sinceVersion) < 0 {
+			skipped += len(guideline.examples)
+			continue
+		}
+		for i, example := range guideline.examples {
+			for _, side := range []struct {
+				name    string
+				snippet string
+			}{{"before", example.before}, {"after", example.after}} {
+				formatted, err := formatGoSnippet(side.snippet)
+				if err != nil {
+					t.Errorf("guideline %q example %d %s does not parse as Go: %v\n%s",
+						guideline.id, i+1, side.name, err, side.snippet)
+					continue
+				}
+				if formatted != side.snippet {
+					t.Errorf("guideline %q example %d %s is not gofmt-formatted\nhave:\n%s\nwant:\n%s",
+						guideline.id, i+1, side.name, side.snippet, formatted)
+				}
+			}
+		}
+	}
+	if skipped > 0 {
+		t.Logf("skipped %d example snippets newer than the Go %s toolchain", skipped, toolchainVersion)
+	}
+}
+
+// formatGoSnippet returns the gofmt form of an example snippet.
+func formatGoSnippet(snippet string) (string, error) {
+	blocks := strings.Split(snippet, "\n\n")
+	formatted := make([]string, 0, len(blocks))
+	for _, block := range blocks {
+		if out, err := formatGoDeclarations(block); err == nil {
+			formatted = append(formatted, out)
+			continue
+		}
+		out, err := formatGoStatements(block)
+		if err != nil {
+			return "", err
+		}
+		formatted = append(formatted, out)
+	}
+	return strings.Join(formatted, "\n\n"), nil
+}
+
+func formatGoDeclarations(block string) (string, error) {
+	out, err := format.Source([]byte("package p\n" + block + "\n"))
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(strings.TrimRight(string(out), "\n"), "\n")
+	lines = lines[1:]
+	for len(lines) > 0 && strings.TrimSpace(lines[0]) == "" {
+		lines = lines[1:]
+	}
+	return strings.Join(lines, "\n"), nil
+}
+
+func formatGoStatements(block string) (string, error) {
+	out, err := format.Source([]byte("package p\nfunc _() {\n" + block + "\n}\n"))
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(strings.TrimRight(string(out), "\n"), "\n")
+	start := -1
+	for i, line := range lines {
+		if line == "func _() {" {
+			start = i + 1
+			break
+		}
+	}
+	if start < 0 || lines[len(lines)-1] != "}" {
+		return "", fmt.Errorf("unexpected gofmt wrapper output:\n%s", out)
+	}
+	body := lines[start : len(lines)-1]
+	for i, line := range body {
+		body[i] = strings.TrimPrefix(line, "\t")
+	}
+	return strings.Join(body, "\n"), nil
+}
+
+// toolchainLanguageVersion reports the major.minor Go version of the running
+// toolchain, so examples for a newer Go than the test runs on are not checked.
+func toolchainLanguageVersion() (string, bool) {
+	version := runtime.Version()
+	index := strings.Index(version, "go1.")
+	if index < 0 {
+		return "", false
+	}
+	parts := strings.SplitN(version[index+len("go"):], ".", 3)
+	if len(parts) < 2 {
+		return "", false
+	}
+	minor := parts[1]
+	for i, r := range minor {
+		if r < '0' || r > '9' {
+			minor = minor[:i]
+			break
+		}
+	}
+	candidate := parts[0] + "." + minor
+	if !goversion.IsMajorMinor(candidate) {
+		return "", false
+	}
+	return candidate, true
 }
