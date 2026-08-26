@@ -195,8 +195,8 @@
   {
     "id": "strings_bytes_cut_last",
     "since_version": "1.27",
-    "guideline": "Use strings.CutLast and bytes.CutLast instead of LastIndex plus manual slicing around the last separator.",
-    "details": "CutLast splits around the final separator and returns before, after, and found. It removes LastIndex checks and manual separator-length slicing.",
+    "guideline": "Use strings.CutLast and bytes.CutLast instead of LastIndex plus manual slicing around the last separator. When the separator is absent CutLast returns the whole input as before and an empty after, so check found before you use them.",
+    "details": "CutLast splits around the final separator and returns before, after, and found. It removes LastIndex checks and manual separator-length slicing. When the separator is absent CutLast returns s, an empty after, and false. That is the opposite of the usual LastIndex fallback, which treats the whole input as the trailing part, so keep the not-found branch explicit.",
     "examples": [
       {
         "before": [
@@ -207,7 +207,10 @@
           "dir, file := path[:i], path[i+1:]"
         ],
         "after": [
-          "dir, file, found := strings.CutLast(path, \"/\")"
+          "dir, file, found := strings.CutLast(path, \"/\")",
+          "if !found {",
+          "  return \"\", path, false",
+          "}"
         ]
       },
       {
@@ -219,7 +222,10 @@
           "name, value := line[:i], line[i+1:]"
         ],
         "after": [
-          "name, value, found := bytes.CutLast(line, []byte(\":\"))"
+          "name, value, found := bytes.CutLast(line, []byte(\":\"))",
+          "if !found {",
+          "  return nil, line, false",
+          "}"
         ]
       }
     ]
@@ -702,8 +708,8 @@
   {
     "id": "min_max",
     "since_version": "1.21",
-    "guideline": "Use built-in min and max instead of handwritten comparisons.",
-    "details": "The min and max built-ins express ordered comparisons directly. They remove branch boilerplate when the logic is simply choosing the smaller or larger value.",
+    "guideline": "Use built-in min and max instead of handwritten comparisons. For floating point values min and max propagate NaN where an if comparison keeps the running value.",
+    "details": "The min and max built-ins express ordered comparisons directly. They remove branch boilerplate when the logic is simply choosing the smaller or larger value. For floating point values max(a, b) returns NaN when either operand is NaN, while if b > a { a = b } keeps a. Keep the explicit comparison when NaN must not propagate.",
     "examples": [
       {
         "before": [
@@ -842,8 +848,8 @@
   {
     "id": "slices_max_min",
     "since_version": "1.21",
-    "guideline": "Use slices.Max and slices.Min instead of manual loops over ordered values.",
-    "details": "slices.Max and slices.Min capture the common non-empty-slice scan for an ordered maximum or minimum. Keep explicit logic when empty slices or custom comparison rules need special handling.",
+    "guideline": "Use slices.Max and slices.Min instead of manual loops over ordered values. They panic on an empty slice and propagate NaN for floating point values.",
+    "details": "slices.Max and slices.Min capture the common non-empty-slice scan for an ordered maximum or minimum. Keep explicit logic when empty slices or custom comparison rules need special handling. For floating point values they return NaN when the slice holds a NaN, while a manual > scan keeps the running value.",
     "examples": [
       {
         "before": [
@@ -920,7 +926,7 @@
     "id": "slices_clone",
     "since_version": "1.21",
     "guideline": "Use slices.Clone to copy a slice.",
-    "details": "slices.Clone returns a shallow copy of a slice using the standard helper. It is clearer than append-copy boilerplate and preserves nil slices.",
+    "details": "slices.Clone returns a shallow copy of a slice using the standard helper. It is clearer than append-copy boilerplate. slices.Clone(nil) returns nil, but an empty non-nil slice produces an empty non-nil copy where append([]T(nil), values...) produces nil. json.Marshal then writes [] instead of null.",
     "examples": [
       {
         "before": [
@@ -935,8 +941,8 @@
   {
     "id": "maps_clone",
     "since_version": "1.21",
-    "guideline": "Use maps.Clone instead of manual map iteration.",
-    "details": "maps.Clone returns a shallow copy of a map using the standard helper. It preserves nil maps and makes the copy operation explicit.",
+    "guideline": "Use maps.Clone to copy a map. maps.Clone returns nil for a nil map, so a write to the result panics where a make plus range copy would have succeeded.",
+    "details": "maps.Clone returns a shallow copy of a map using the standard helper. It makes the copy operation explicit. Unlike a make plus range copy, it preserves a nil source: maps.Clone(nil) returns a nil map, and a write to that result panics. Keep make when the copy must be writable whatever the source is.",
     "examples": [
       {
         "before": [
@@ -1043,7 +1049,7 @@
     "id": "context_after_func",
     "since_version": "1.21",
     "guideline": "Use context.AfterFunc to run cleanup when a context is canceled.",
-    "details": "context.AfterFunc registers work to run after cancellation and returns a stop function. It avoids starting a goroutine whose only job is to wait on ctx.Done.",
+    "details": "context.AfterFunc registers work to run after cancellation and returns a stop function. It avoids starting a goroutine whose only job is to wait on ctx.Done. The stop function cancels the registration, so call it only when the cleanup must no longer run. Do not defer stop in the enclosing function unless the cleanup is scoped to that function, because the registration then ends as soon as the function returns.",
     "examples": [
       {
         "before": [
@@ -1053,8 +1059,7 @@
           "}()"
         ],
         "after": [
-          "stop := context.AfterFunc(ctx, cleanup)",
-          "defer stop()"
+          "context.AfterFunc(ctx, cleanup)"
         ]
       }
     ]
@@ -1097,7 +1102,7 @@
     "id": "bytes_clone",
     "since_version": "1.20",
     "guideline": "Use bytes.Clone to copy a byte slice.",
-    "details": "bytes.Clone communicates that a new byte slice is required. It avoids append-copy boilerplate and preserves the standard library's nil-slice behavior.",
+    "details": "bytes.Clone communicates that a new byte slice is required. It avoids append-copy boilerplate. bytes.Clone(nil) returns nil, but an empty non-nil slice produces an empty non-nil copy where append([]byte(nil), b...) produces nil. json.Marshal then writes \"\" instead of null.",
     "examples": [
       {
         "before": [
@@ -1240,8 +1245,8 @@
   {
     "id": "bytes_cut",
     "since_version": "1.18",
-    "guideline": "Use bytes.Cut instead of bytes.Index plus manual slicing.",
-    "details": "bytes.Cut returns before, after, and found in one call. It avoids duplicated Index checks and separator-length arithmetic while returning slices of the original byte slice.",
+    "guideline": "Use bytes.Cut instead of bytes.Index plus manual slicing. Cut returns b as before and a nil after when sep is absent, so check found before you use before.",
+    "details": "bytes.Cut returns before, after, and found in one call. It avoids duplicated Index checks and separator-length arithmetic while returning slices of the original byte slice. When sep is absent Cut returns b, a nil after, and false, so a caller that ignores found reads the whole input as before.",
     "examples": [
       {
         "before": [
@@ -1252,7 +1257,10 @@
           "before, after := b[:i], b[i+len(sep):]"
         ],
         "after": [
-          "before, after, found := bytes.Cut(b, sep)"
+          "before, after, found := bytes.Cut(b, sep)",
+          "if !found {",
+          "  return nil, nil, false",
+          "}"
         ]
       }
     ]
@@ -1260,8 +1268,8 @@
   {
     "id": "strings_cut",
     "since_version": "1.18",
-    "guideline": "Use strings.Cut instead of strings.Index plus manual slicing.",
-    "details": "strings.Cut returns before, after, and found in one call. It makes split-at-first-separator logic explicit and removes manual Index checks and slicing.",
+    "guideline": "Use strings.Cut instead of strings.Index plus manual slicing. Cut returns s as before and an empty after when sep is absent, so check found before you use before.",
+    "details": "strings.Cut returns before, after, and found in one call. It makes split-at-first-separator logic explicit and removes manual Index checks and slicing. When sep is absent Cut returns s, an empty after, and false, so a caller that ignores found reads the whole input as before.",
     "examples": [
       {
         "before": [
@@ -1272,7 +1280,10 @@
           "key, value := s[:i], s[i+1:]"
         ],
         "after": [
-          "key, value, found := strings.Cut(s, \":\")"
+          "key, value, found := strings.Cut(s, \":\")",
+          "if !found {",
+          "  return \"\", \"\", false",
+          "}"
         ]
       }
     ]

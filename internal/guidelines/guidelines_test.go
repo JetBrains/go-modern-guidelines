@@ -40,7 +40,7 @@ func TestListForGo127(t *testing.T) {
 	for _, want := range []string{
 		"generic_methods: Use generic methods instead of package-level generic helper functions when the operation naturally belongs to the type itself.",
 		"promoted_field_literals: Set embedded struct fields directly with promoted field names in Go 1.27+ struct literals instead of constructing the embedded struct explicitly.",
-		"strings_bytes_cut_last: Use strings.CutLast and bytes.CutLast instead of LastIndex plus manual slicing around the last separator.",
+		"strings_bytes_cut_last: Use strings.CutLast and bytes.CutLast instead of LastIndex plus manual slicing around the last separator. When the separator is absent CutLast returns the whole input as before and an empty after, so check found before you use them.",
 		"stdlib_uuid: Use the standard library uuid package instead of third-party libraries or custom UUID implementations when targeting Go 1.27+.",
 		"url_clone: Use net/url URL.Clone and Values.Clone methods to copy URLs and URL values instead of manual copying.",
 	} {
@@ -165,5 +165,33 @@ func TestExplainFormatting(t *testing.T) {
     ptr.Store(cfg)`
 	if output != want {
 		t.Fatalf("explain output mismatch\nwant:\n%s\ngot:\n%s", want, output)
+	}
+}
+
+// TestCutExamplesKeepNotFoundBranch guards the fix for the Cut-family examples.
+// strings.Cut, bytes.Cut, strings.CutLast, and bytes.CutLast do not return zero
+// values when the separator is absent: they return the whole input as before.
+// The "before" snippets of these examples all return on that path, so the
+// "after" snippets must keep the branch, or the rewrite changes the result.
+func TestCutExamplesKeepNotFoundBranch(t *testing.T) {
+	want := map[string]bool{"strings_cut": false, "bytes_cut": false, "strings_bytes_cut_last": false}
+	for _, guideline := range modernGoGuidelines {
+		if _, ok := want[guideline.id]; !ok {
+			continue
+		}
+		want[guideline.id] = true
+		for i, example := range guideline.examples {
+			if !strings.Contains(example.after, "found :=") {
+				t.Fatalf("%s example %d: after snippet no longer binds found:\n%s", guideline.id, i+1, example.after)
+			}
+			if !strings.Contains(example.after, "if !found {") {
+				t.Fatalf("%s example %d: after snippet drops the not-found branch:\n%s", guideline.id, i+1, example.after)
+			}
+		}
+	}
+	for id, seen := range want {
+		if !seen {
+			t.Fatalf("guideline %q not found", id)
+		}
 	}
 }
