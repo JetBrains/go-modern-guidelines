@@ -13,7 +13,7 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-var goVersionInText = regexp.MustCompile(`(?i)(?:^|\s)(?:go)?(\d+\.\d+)`)
+var strictGoVersionPattern = regexp.MustCompile(`(?i)^(?:go\s+version\s+)?(?:go)?(\d+\.\d+)(?:\.\d+)?(?:\s+.*)?$`)
 
 // Resolve returns the normalized Go major.minor version for the given version source.
 func Resolve(filePath, goVersion, develVersion string) (string, error) {
@@ -177,7 +177,7 @@ func normalizeGoVersion(rawVersion, develVersion string) (string, error) {
 		return develVersion, nil
 	}
 
-	match := goVersionInText.FindStringSubmatch(trimmed)
+	match := strictGoVersionPattern.FindStringSubmatch(trimmed)
 	if len(match) < 2 {
 		return "", fmt.Errorf("cannot parse Go version %q", rawVersion)
 	}
