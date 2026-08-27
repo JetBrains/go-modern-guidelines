@@ -35,6 +35,19 @@ func Resolve(filePath, goVersion, develVersion string) (string, error) {
 		return resolveGoVersionFromPath(filePath, develVersion)
 	}
 
+	// No path given, so the working directory is the project. README promises
+	// the version is detected from go.mod; without this a bare `list` run
+	// inside a module reported the local toolchain instead.
+	if workingDir, err := os.Getwd(); err == nil {
+		version, ok, err := resolveGoVersionFromModuleFiles(workingDir, develVersion)
+		if err != nil {
+			return "", err
+		}
+		if ok {
+			return version, nil
+		}
+	}
+
 	return resolveGoToolVersion("local Go toolchain", develVersion)
 }
 

@@ -211,6 +211,41 @@ func TestResolveGoWorkWithoutGoDirectiveFallsBackToToolchain(t *testing.T) {
 	}
 }
 
+func TestResolveWithoutFilePathReadsModuleInWorkingDirectory(t *testing.T) {
+	// README: "Detect the project's Go version from go.mod". A bare `list`
+	// passes no file path, so without this it reported the local toolchain and
+	// offered guidelines the project's own go directive does not allow.
+	dir := t.TempDir()
+	pkgDir := filepath.Join(dir, "pkg")
+	if err := os.MkdirAll(pkgDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n\ngo 1.21\n")
+	t.Chdir(pkgDir)
+
+	got, err := Resolve("", "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.21" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.21")
+	}
+}
+
+func TestResolveWithoutFilePathFallsBackToToolchainOutsideAModule(t *testing.T) {
+	// No go.mod anywhere above the working directory, so the toolchain remains
+	// the only available answer.
+	t.Chdir(t.TempDir())
+
+	got, err := Resolve("", "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if !IsMajorMinor(got) {
+		t.Fatalf("Resolve = %q, want a major.minor toolchain version", got)
+	}
+}
+
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
