@@ -9,32 +9,26 @@
         "before": [
           "type Set[T comparable] map[T]struct{}",
           "",
-          "func Map[T comparable, U any](s Set[T], f func(T) U) []U {",
-          "  out := make([]U, 0, len(s))",
-          "  for value := range s {",
-          "    out = append(out, f(value))",
-          "  }",
-          "  return out",
+          "func Contains[T comparable](s Set[T], v T) bool {",
+          "  _, ok := s[v]",
+          "  return ok",
           "}",
           "",
-          "names := Map(users, func(user User) string {",
-          "  return user.Name",
-          "})"
+          "if Contains(users, target) {",
+          "  // ...",
+          "}"
         ],
         "after": [
           "type Set[T comparable] map[T]struct{}",
           "",
-          "func (s Set[T]) Map[U any](f func(T) U) []U {",
-          "  out := make([]U, 0, len(s))",
-          "  for value := range s {",
-          "    out = append(out, f(value))",
-          "  }",
-          "  return out",
+          "func (s Set[T]) Contains(v T) bool {",
+          "  _, ok := s[v]",
+          "  return ok",
           "}",
           "",
-          "names := users.Map(func(user User) string {",
-          "  return user.Name",
-          "})"
+          "if users.Contains(target) {",
+          "  // ...",
+          "}"
         ]
       }
     ]
