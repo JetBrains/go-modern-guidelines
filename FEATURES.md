@@ -95,15 +95,15 @@ Generic methods keep operations in the namespace of the type that owns them. Kee
 type Set[T comparable] map[T]struct{}
 
 func Map[T comparable, U any](s Set[T], f func(T) U) []U {
-  out := make([]U, 0, len(s))
-  for value := range s {
-    out = append(out, f(value))
-  }
-  return out
+	out := make([]U, 0, len(s))
+	for value := range s {
+		out = append(out, f(value))
+	}
+	return out
 }
 
 names := Map(users, func(user User) string {
-  return user.Name
+	return user.Name
 })
 ```
 
@@ -113,15 +113,15 @@ names := Map(users, func(user User) string {
 type Set[T comparable] map[T]struct{}
 
 func (s Set[T]) Map[U any](f func(T) U) []U {
-  out := make([]U, 0, len(s))
-  for value := range s {
-    out = append(out, f(value))
-  }
-  return out
+	out := make([]U, 0, len(s))
+	for value := range s {
+		out = append(out, f(value))
+	}
+	return out
 }
 
 names := users.Map(func(user User) string {
-  return user.Name
+	return user.Name
 })
 ```
 
@@ -145,8 +145,8 @@ Use `encoding/json/v2` for new JSON code in Go 1.27+; leave existing `encoding/j
 import "encoding/json"
 
 type Pet struct {
-  Name      string
-  Nicknames []string
+	Name      string
+	Nicknames []string
 }
 
 body, err := json.Marshal(Pet{Name: "Remi"})
@@ -159,8 +159,8 @@ body, err := json.Marshal(Pet{Name: "Remi"})
 import "encoding/json/v2"
 
 type Pet struct {
-  Name      string
-  Nicknames []string
+	Name      string
+	Nicknames []string
 }
 
 // New code uses v2's stricter defaults.
@@ -176,8 +176,8 @@ body, err := json.Marshal(Pet{Name: "Remi"})
 import "encoding/json"
 
 type Pet struct {
-  Name      string
-  Nicknames []string
+	Name      string
+	Nicknames []string
 }
 
 // Leave existing v1 code unchanged unless migration is requested.
@@ -189,19 +189,19 @@ body, err := json.Marshal(Pet{Name: "Remi"})
 
 ```go
 import (
-  jsonv1 "encoding/json"
-  json "encoding/json/v2"
+	jsonv1 "encoding/json"
+	json "encoding/json/v2"
 )
 
 type Pet struct {
-  Name      string
-  Nicknames []string
+	Name      string
+	Nicknames []string
 }
 
 // For an explicit migration, retain existing wire behavior first.
 body, err := json.Marshal(
-  Pet{Name: "Remi"},
-  jsonv1.DefaultOptionsV1(),
+	Pet{Name: "Remi"},
+	jsonv1.DefaultOptionsV1(),
 )
 // Existing consumers still receive {"Name":"Remi","Nicknames":null}.
 ```
@@ -212,18 +212,18 @@ body, err := json.Marshal(
 
 ```go
 import (
-  jsonv1 "encoding/json"
-  json "encoding/json/v2"
+	jsonv1 "encoding/json"
+	json "encoding/json/v2"
 )
 
 type Pet struct {
-  Name      string
-  Nicknames []string
+	Name      string
+	Nicknames []string
 }
 
 body, err := json.Marshal(
-  Pet{Name: "Remi"},
-  jsonv1.DefaultOptionsV1(),
+	Pet{Name: "Remi"},
+	jsonv1.DefaultOptionsV1(),
 )
 // body is {"Name":"Remi","Nicknames":null}
 ```
@@ -232,20 +232,20 @@ body, err := json.Marshal(
 
 ```go
 import (
-  jsonv1 "encoding/json"
-  json "encoding/json/v2"
+	jsonv1 "encoding/json"
+	json "encoding/json/v2"
 )
 
 type Pet struct {
-  Name      string
-  Nicknames []string
+	Name      string
+	Nicknames []string
 }
 
 // Then adopt v2 behavior only after verifying consumers.
 body, err := json.Marshal(
-  Pet{Name: "Remi"},
-  jsonv1.DefaultOptionsV1(),
-  json.FormatNilSliceAsNull(false),
+	Pet{Name: "Remi"},
+	jsonv1.DefaultOptionsV1(),
+	json.FormatNilSliceAsNull(false),
 )
 // body is {"Name":"Remi","Nicknames":[]}
 ```
@@ -268,23 +268,23 @@ Go 1.27 allows keyed struct literals to set fields promoted from embedded struct
 
 ```go
 type AuditInfo struct {
-  CreatedBy string
-  UpdatedBy string
+	CreatedBy string
+	UpdatedBy string
 }
 
 type Document struct {
-  AuditInfo
-  Name string
-  Path string
+	AuditInfo
+	Name string
+	Path string
 }
 
 doc := Document{
-  AuditInfo: AuditInfo{
-    CreatedBy: "alice",
-    UpdatedBy: "alice",
-  },
-  Name: "report.pdf",
-  Path: "/documents/report.pdf",
+	AuditInfo: AuditInfo{
+		CreatedBy: "alice",
+		UpdatedBy: "alice",
+	},
+	Name: "report.pdf",
+	Path: "/documents/report.pdf",
 }
 ```
 
@@ -292,21 +292,21 @@ doc := Document{
 
 ```go
 type AuditInfo struct {
-  CreatedBy string
-  UpdatedBy string
+	CreatedBy string
+	UpdatedBy string
 }
 
 type Document struct {
-  AuditInfo
-  Name string
-  Path string
+	AuditInfo
+	Name string
+	Path string
 }
 
 doc := Document{
-  CreatedBy: "alice",
-  UpdatedBy: "alice",
-  Name:      "report.pdf",
-  Path:      "/documents/report.pdf",
+	CreatedBy: "alice",
+	UpdatedBy: "alice",
+	Name:      "report.pdf",
+	Path:      "/documents/report.pdf",
 }
 ```
 
@@ -329,7 +329,7 @@ Use `strings.CutLast` and `bytes.CutLast` instead of `LastIndex` plus manual sli
 ```go
 i := strings.LastIndex(path, "/")
 if i < 0 {
-  return "", path, false
+	return "", path, false
 }
 dir, file := path[:i], path[i+1:]
 ```
@@ -347,7 +347,7 @@ dir, file, found := strings.CutLast(path, "/")
 ```go
 i := bytes.LastIndex(line, []byte(":"))
 if i < 0 {
-  return nil, line, false
+	return nil, line, false
 }
 name, value := line[:i], line[i+1:]
 ```
@@ -397,7 +397,7 @@ text := id.String()
 ```go
 id, err := googleuuid.Parse(raw)
 if err != nil {
-  return err
+	return err
 }
 ```
 
@@ -406,7 +406,7 @@ if err != nil {
 ```go
 id, err := uuid.Parse(raw)
 if err != nil {
-  return err
+	return err
 }
 ```
 
@@ -430,12 +430,12 @@ Use the `URL.Clone` and `Values.Clone` methods from `net/url` to copy URLs and `
 copy := new(url.URL)
 *copy = *base
 if base.User != nil {
-  username := base.User.Username()
-  if password, ok := base.User.Password(); ok {
-    copy.User = url.UserPassword(username, password)
-  } else {
-    copy.User = url.User(username)
-  }
+	username := base.User.Username()
+	if password, ok := base.User.Password(); ok {
+		copy.User = url.UserPassword(username, password)
+	} else {
+		copy.User = url.User(username)
+	}
 }
 ```
 
@@ -452,7 +452,7 @@ copy := base.Clone()
 ```go
 copy := make(url.Values, len(values))
 for key, items := range values {
-  copy[key] = append([]string(nil), items...)
+	copy[key] = append([]string(nil), items...)
 }
 ```
 
@@ -480,12 +480,12 @@ Use `new(value)` for pointer fields or arguments instead of generic/type-specifi
 
 ```go
 func Pointer[T any](value T) *T {
-  return &value
+	return &value
 }
 
 cfg := Config{
-  Timeout: Pointer(30),
-  Debug:   Pointer(true),
+	Timeout: Pointer(30),
+	Debug:   Pointer(true),
 }
 ```
 
@@ -493,8 +493,8 @@ cfg := Config{
 
 ```go
 cfg := Config{
-  Timeout: new(30),
-  Debug:   new(true),
+	Timeout: new(30),
+	Debug:   new(true),
 }
 ```
 
@@ -506,8 +506,8 @@ cfg := Config{
 timeout := 30
 debug := true
 cfg := Config{
-  Timeout: &timeout,
-  Debug:   &debug,
+	Timeout: &timeout,
+	Debug:   &debug,
 }
 ```
 
@@ -515,8 +515,8 @@ cfg := Config{
 
 ```go
 cfg := Config{
-  Timeout: new(30),
-  Debug:   new(true),
+	Timeout: new(30),
+	Debug:   new(true),
 }
 ```
 
@@ -539,7 +539,7 @@ Use `errors.AsType[T](err)` when checking whether an error matches a specific ty
 ```go
 var pathErr *os.PathError
 if errors.As(err, &pathErr) {
-  handle(pathErr)
+	handle(pathErr)
 }
 ```
 
@@ -547,7 +547,7 @@ if errors.As(err, &pathErr) {
 
 ```go
 if pathErr, ok := errors.AsType[*os.PathError](err); ok {
-  handle(pathErr)
+	handle(pathErr)
 }
 ```
 
@@ -570,11 +570,11 @@ Use `wg.Go` when spawning goroutines tracked by a `sync.WaitGroup`.
 ```go
 var wg sync.WaitGroup
 for _, item := range items {
-  wg.Add(1)
-  go func() {
-    defer wg.Done()
-    process(item)
-  }()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		process(item)
+	}()
 }
 wg.Wait()
 ```
@@ -584,9 +584,9 @@ wg.Wait()
 ```go
 var wg sync.WaitGroup
 for _, item := range items {
-  wg.Go(func() {
-    process(item)
-  })
+	wg.Go(func() {
+		process(item)
+	})
 }
 wg.Wait()
 ```
@@ -609,9 +609,9 @@ Use `t.Context()` when a test function needs a context tied to the test lifetime
 
 ```go
 func TestFoo(t *testing.T) {
-  ctx, cancel := context.WithCancel(context.Background())
-  defer cancel()
-  result := doSomething(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	result := doSomething(ctx)
 }
 ```
 
@@ -619,8 +619,8 @@ func TestFoo(t *testing.T) {
 
 ```go
 func TestFoo(t *testing.T) {
-  ctx := t.Context()
-  result := doSomething(ctx)
+	ctx := t.Context()
+	result := doSomething(ctx)
 }
 ```
 
@@ -642,10 +642,10 @@ When adding or editing JSON struct tags, use `omitzero` when the Go zero value m
 
 ```go
 type CacheEntry struct {
-  Name      string    `json:"name,omitempty"`
-  Warm      bool      `json:"warm,omitempty"`
-  Hits      int64     `json:"hits,omitempty"`
-  ExpiresAt time.Time `json:"expiresAt,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Warm      bool      `json:"warm,omitempty"`
+	Hits      int64     `json:"hits,omitempty"`
+	ExpiresAt time.Time `json:"expiresAt,omitempty"`
 }
 ```
 
@@ -653,10 +653,10 @@ type CacheEntry struct {
 
 ```go
 type CacheEntry struct {
-  Name      string    `json:"name,omitempty"`
-  Warm      bool      `json:"warm,omitzero"`
-  Hits      int64     `json:"hits,omitzero"`
-  ExpiresAt time.Time `json:"expiresAt,omitzero"`
+	Name      string    `json:"name,omitempty"`
+	Warm      bool      `json:"warm,omitzero"`
+	Hits      int64     `json:"hits,omitzero"`
+	ExpiresAt time.Time `json:"expiresAt,omitzero"`
 }
 ```
 
@@ -678,9 +678,9 @@ Use `b.Loop()` for the main loop in benchmark functions.
 
 ```go
 func BenchmarkFoo(b *testing.B) {
-  for i := 0; i < b.N; i++ {
-    doWork()
-  }
+	for i := 0; i < b.N; i++ {
+		doWork()
+	}
 }
 ```
 
@@ -688,9 +688,9 @@ func BenchmarkFoo(b *testing.B) {
 
 ```go
 func BenchmarkFoo(b *testing.B) {
-  for b.Loop() {
-    doWork()
-  }
+	for b.Loop() {
+		doWork()
+	}
 }
 ```
 
@@ -712,7 +712,7 @@ The `SplitSeq` and `FieldsSeq` helpers stream substrings instead of allocating a
 
 ```go
 for _, part := range strings.Split(s, ",") {
-  process(part)
+	process(part)
 }
 ```
 
@@ -720,7 +720,7 @@ for _, part := range strings.Split(s, ",") {
 
 ```go
 for part := range strings.SplitSeq(s, ",") {
-  process(part)
+	process(part)
 }
 ```
 
@@ -730,7 +730,7 @@ for part := range strings.SplitSeq(s, ",") {
 
 ```go
 for _, field := range bytes.Fields(b) {
-  process(field)
+	process(field)
 }
 ```
 
@@ -738,7 +738,7 @@ for _, field := range bytes.Fields(b) {
 
 ```go
 for field := range bytes.FieldsSeq(b) {
-  process(field)
+	process(field)
 }
 ```
 
@@ -760,7 +760,7 @@ Use `maps.Keys` or `maps.Values` directly as iterators instead of manually loopi
 
 ```go
 for k := range m {
-  process(k)
+	process(k)
 }
 ```
 
@@ -768,7 +768,7 @@ for k := range m {
 
 ```go
 for k := range maps.Keys(m) {
-  process(k)
+	process(k)
 }
 ```
 
@@ -791,7 +791,7 @@ Use `slices.Collect` to build a slice from an iterator.
 ```go
 keys := make([]string, 0, len(m))
 for k := range m {
-  keys = append(keys, k)
+	keys = append(keys, k)
 }
 ```
 
@@ -820,7 +820,7 @@ Use `slices.Sorted` to collect and sort iterator values in one step.
 ```go
 keys := make([]string, 0, len(m))
 for k := range m {
-  keys = append(keys, k)
+	keys = append(keys, k)
 }
 slices.Sort(keys)
 ```
@@ -851,7 +851,7 @@ Go 1.23 made unreferenced tickers recoverable by the garbage collector. Use `tim
 ticker := time.NewTicker(time.Second)
 defer ticker.Stop()
 for range ticker.C {
-  poll()
+	poll()
 }
 ```
 
@@ -859,7 +859,7 @@ for range ticker.C {
 
 ```go
 for range time.Tick(time.Second) {
-  poll()
+	poll()
 }
 ```
 
@@ -881,7 +881,7 @@ Ranging over an integer is the concise Go 1.22 form for zero-based count loops. 
 
 ```go
 for i := 0; i < len(items); i++ {
-  process(items[i])
+	process(items[i])
 }
 ```
 
@@ -889,7 +889,7 @@ for i := 0; i < len(items); i++ {
 
 ```go
 for i := range len(items) {
-  process(items[i])
+	process(items[i])
 }
 ```
 
@@ -911,10 +911,10 @@ Go 1.22 gives each loop iteration its own variables, so defensive copies like `v
 
 ```go
 for _, item := range items {
-  item := item
-  go func() {
-    process(item)
-  }()
+	item := item
+	go func() {
+		process(item)
+	}()
 }
 ```
 
@@ -922,9 +922,9 @@ for _, item := range items {
 
 ```go
 for _, item := range items {
-  go func() {
-    process(item)
-  }()
+	go func() {
+		process(item)
+	}()
 }
 ```
 
@@ -935,10 +935,10 @@ for _, item := range items {
 ```go
 var selected []*Item
 for _, item := range items {
-  item := item
-  if item.Enabled {
-    selected = append(selected, &item)
-  }
+	item := item
+	if item.Enabled {
+		selected = append(selected, &item)
+	}
 }
 ```
 
@@ -947,9 +947,9 @@ for _, item := range items {
 ```go
 var selected []*Item
 for _, item := range items {
-  if item.Enabled {
-    selected = append(selected, &item)
-  }
+	if item.Enabled {
+		selected = append(selected, &item)
+	}
 }
 ```
 
@@ -972,7 +972,7 @@ Use `cmp.Or` to pick the first non-zero value from a fallback chain.
 ```go
 name := os.Getenv("NAME")
 if name == "" {
-  name = "default"
+	name = "default"
 }
 ```
 
@@ -1026,12 +1026,12 @@ The modern `ServeMux` pattern syntax can include an HTTP method and named path w
 
 ```go
 mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
-  if r.Method != http.MethodGet {
-    http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-    return
-  }
-  id := strings.TrimPrefix(r.URL.Path, "/api/")
-  handleID(w, r, id)
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := strings.TrimPrefix(r.URL.Path, "/api/")
+	handleID(w, r, id)
 })
 ```
 
@@ -1039,7 +1039,7 @@ mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 
 ```go
 mux.HandleFunc("GET /api/{id}", func(w http.ResponseWriter, r *http.Request) {
-  handleID(w, r, r.PathValue("id"))
+	handleID(w, r, r.PathValue("id"))
 })
 ```
 
@@ -1061,7 +1061,7 @@ The `min` and `max` built-ins express ordered comparisons directly. They remove 
 
 ```go
 if b > a {
-  a = b
+	a = b
 }
 ```
 
@@ -1089,7 +1089,7 @@ Use `clear(m)` to delete all map entries or `clear(s)` to zero slice elements.
 
 ```go
 for k := range m {
-  delete(m, k)
+	delete(m, k)
 }
 ```
 
@@ -1118,10 +1118,10 @@ Use `slices.Contains` instead of a manual search loop.
 ```go
 found := false
 for _, item := range items {
-  if item == x {
-    found = true
-    break
-  }
+	if item == x {
+		found = true
+		break
+	}
 }
 ```
 
@@ -1150,10 +1150,10 @@ Use `slices.Index` to find the index of an element, returning `-1` when absent.
 ```go
 index := -1
 for i, item := range items {
-  if item == x {
-    index = i
-    break
-  }
+	if item == x {
+		index = i
+		break
+	}
 }
 ```
 
@@ -1182,10 +1182,10 @@ Use `slices.IndexFunc` to find an element by predicate.
 ```go
 index := -1
 for i, item := range items {
-  if item.ID == id {
-    index = i
-    break
-  }
+	if item.ID == id {
+		index = i
+		break
+	}
 }
 ```
 
@@ -1193,7 +1193,7 @@ for i, item := range items {
 
 ```go
 index := slices.IndexFunc(items, func(item Item) bool {
-  return item.ID == id
+	return item.ID == id
 })
 ```
 
@@ -1215,7 +1215,7 @@ Use `slices.SortFunc` with `cmp.Compare` instead of `sort.Slice` for typed compa
 
 ```go
 sort.Slice(items, func(i, j int) bool {
-  return items[i].X < items[j].X
+	return items[i].X < items[j].X
 })
 ```
 
@@ -1223,7 +1223,7 @@ sort.Slice(items, func(i, j int) bool {
 
 ```go
 slices.SortFunc(items, func(a, b Item) int {
-  return cmp.Compare(a.X, b.X)
+	return cmp.Compare(a.X, b.X)
 })
 ```
 
@@ -1272,9 +1272,9 @@ Use `slices.Max` and `slices.Min` instead of manual loops over ordered values.
 ```go
 maxValue := values[0]
 for _, value := range values[1:] {
-  if value > maxValue {
-    maxValue = value
-  }
+	if value > maxValue {
+		maxValue = value
+	}
 }
 ```
 
@@ -1302,7 +1302,7 @@ Use `slices.Reverse` instead of a manual swap loop.
 
 ```go
 for i, j := 0, len(items)-1; i < j; i, j = i+1, j-1 {
-  items[i], items[j] = items[j], items[i]
+	items[i], items[j] = items[j], items[i]
 }
 ```
 
@@ -1331,9 +1331,9 @@ Use `slices.Compact` to remove consecutive duplicates in place.
 ```go
 out := values[:0]
 for i, value := range values {
-  if i == 0 || value != values[i-1] {
-    out = append(out, value)
-  }
+	if i == 0 || value != values[i-1] {
+		out = append(out, value)
+	}
 }
 values = out
 ```
@@ -1415,7 +1415,7 @@ Use `maps.Clone` instead of manual map iteration.
 ```go
 copied := make(map[string]int, len(src))
 for k, v := range src {
-  copied[k] = v
+	copied[k] = v
 }
 ```
 
@@ -1443,7 +1443,7 @@ Use `maps.Copy` to copy entries from one map into another.
 
 ```go
 for k, v := range src {
-  dst[k] = v
+	dst[k] = v
 }
 ```
 
@@ -1471,9 +1471,9 @@ Use `maps.DeleteFunc` to delete map entries that match a predicate.
 
 ```go
 for k, v := range m {
-  if shouldDelete(k, v) {
-    delete(m, k)
-  }
+	if shouldDelete(k, v) {
+		delete(m, k)
+	}
 }
 ```
 
@@ -1481,7 +1481,7 @@ for k, v := range m {
 
 ```go
 maps.DeleteFunc(m, func(k string, v int) bool {
-  return shouldDelete(k, v)
+	return shouldDelete(k, v)
 })
 ```
 
@@ -1504,9 +1504,9 @@ Use `sync.OnceFunc` instead of `sync.Once` plus a wrapper closure.
 ```go
 var once sync.Once
 cleanup := func() {
-  once.Do(func() {
-    close(ch)
-  })
+	once.Do(func() {
+		close(ch)
+	})
 }
 ```
 
@@ -1514,7 +1514,7 @@ cleanup := func() {
 
 ```go
 cleanup := sync.OnceFunc(func() {
-  close(ch)
+	close(ch)
 })
 ```
 
@@ -1538,10 +1538,10 @@ Use `sync.OnceValue` to memoize a computed value.
 var once sync.Once
 var value T
 getter := func() T {
-  once.Do(func() {
-    value = computeValue()
-  })
-  return value
+	once.Do(func() {
+		value = computeValue()
+	})
+	return value
 }
 ```
 
@@ -1549,7 +1549,7 @@ getter := func() T {
 
 ```go
 getter := sync.OnceValue(func() T {
-  return computeValue()
+	return computeValue()
 })
 ```
 
@@ -1571,8 +1571,8 @@ Use `context.AfterFunc` to run cleanup when a context is canceled.
 
 ```go
 go func() {
-  <-ctx.Done()
-  cleanup()
+	<-ctx.Done()
+	cleanup()
 }()
 ```
 
@@ -1655,8 +1655,8 @@ Use `strings.CutPrefix` or `strings.CutSuffix` when you need both the trimmed re
 
 ```go
 if strings.HasPrefix(s, "pre:") {
-  rest := strings.TrimPrefix(s, "pre:")
-  use(rest)
+	rest := strings.TrimPrefix(s, "pre:")
+	use(rest)
 }
 ```
 
@@ -1664,7 +1664,7 @@ if strings.HasPrefix(s, "pre:") {
 
 ```go
 if rest, ok := strings.CutPrefix(s, "pre:"); ok {
-  use(rest)
+	use(rest)
 }
 ```
 
@@ -1686,7 +1686,7 @@ Use `errors.Join` to combine multiple errors while preserving error matching.
 
 ```go
 if err1 != nil && err2 != nil {
-  return fmt.Errorf("%v; %w", err1, err2)
+	return fmt.Errorf("%v; %w", err1, err2)
 }
 ```
 
@@ -1771,7 +1771,7 @@ Typed atomic wrapper values keep the storage and the atomic operations together.
 var enabled int32
 atomic.StoreInt32(&enabled, 1)
 if atomic.LoadInt32(&enabled) != 0 {
-  run()
+	run()
 }
 ```
 
@@ -1781,7 +1781,7 @@ if atomic.LoadInt32(&enabled) != 0 {
 var enabled atomic.Bool
 enabled.Store(true)
 if enabled.Load() {
-  run()
+	run()
 }
 ```
 
@@ -1819,7 +1819,7 @@ Use `any` instead of `interface{}`.
 
 ```go
 func Decode(v interface{}) error {
-  return nil
+	return nil
 }
 ```
 
@@ -1827,7 +1827,7 @@ func Decode(v interface{}) error {
 
 ```go
 func Decode(v any) error {
-  return nil
+	return nil
 }
 ```
 
@@ -1850,7 +1850,7 @@ Use `bytes.Cut` instead of `bytes.Index` plus manual slicing.
 ```go
 i := bytes.Index(b, sep)
 if i < 0 {
-  return nil, nil, false
+	return nil, nil, false
 }
 before, after := b[:i], b[i+len(sep):]
 ```
@@ -1906,7 +1906,7 @@ Use `strings.Cut` instead of `strings.Index` plus manual slicing.
 ```go
 i := strings.Index(s, ":")
 if i < 0 {
-  return "", "", false
+	return "", "", false
 }
 key, value := s[:i], s[i+1:]
 ```
@@ -1935,7 +1935,7 @@ Use `errors.Is(err, target)` instead of `err == target` so wrapped errors are ha
 
 ```go
 if err == os.ErrNotExist {
-  return nil
+	return nil
 }
 ```
 
@@ -1943,7 +1943,7 @@ if err == os.ErrNotExist {
 
 ```go
 if errors.Is(err, os.ErrNotExist) {
-  return nil
+	return nil
 }
 ```
 

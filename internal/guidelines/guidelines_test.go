@@ -82,14 +82,14 @@ func TestExplainFormatting(t *testing.T) {
     var enabled int32
     atomic.StoreInt32(&enabled, 1)
     if atomic.LoadInt32(&enabled) != 0 {
-      run()
+` + "    \trun()" + `
     }
 
   After:
     var enabled atomic.Bool
     enabled.Store(true)
     if enabled.Load() {
-      run()
+` + "    \trun()" + `
     }
 
   Example 2:
