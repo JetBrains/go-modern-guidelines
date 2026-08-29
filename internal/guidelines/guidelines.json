@@ -1078,22 +1078,6 @@
     ]
   },
   {
-    "id": "strings_clone",
-    "since_version": "1.18",
-    "guideline": "Use strings.Clone to copy a string without retaining shared backing memory.",
-    "details": "strings.Clone forces a string copy. Use it when retaining a small string derived from a much larger string would otherwise keep the larger backing memory alive.",
-    "examples": [
-      {
-        "before": [
-          "copied := string([]byte(s))"
-        ],
-        "after": [
-          "copied := strings.Clone(s)"
-        ]
-      }
-    ]
-  },
-  {
     "id": "bytes_clone",
     "since_version": "1.20",
     "guideline": "Use bytes.Clone to copy a byte slice.",
@@ -1253,6 +1237,22 @@
         ],
         "after": [
           "before, after, found := bytes.Cut(b, sep)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "strings_clone",
+    "since_version": "1.18",
+    "guideline": "Use strings.Clone to copy a string without retaining shared backing memory.",
+    "details": "strings.Clone forces a string copy. Use it when retaining a small string derived from a much larger string would otherwise keep the larger backing memory alive.",
+    "examples": [
+      {
+        "before": [
+          "copied := string([]byte(s))"
+        ],
+        "after": [
+          "copied := strings.Clone(s)"
         ]
       }
     ]
