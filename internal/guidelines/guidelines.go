@@ -2,11 +2,11 @@ package guidelines
 
 import (
 	_ "embed"
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/JetBrains/go-modern-guidelines/internal/goversion"
+	"github.com/JetBrains/go-modern-guidelines/internal/guidelines/schema"
 )
 
 type modernGoExample struct {
@@ -17,33 +17,24 @@ type modernGoExample struct {
 type modernGoGuideline struct {
 	id           string
 	sinceVersion string
+	modernizer   bool
+	category     string
+	impact       string
 	guideline    string
 	details      string
 	examples     []modernGoExample
 }
 
-type modernGoExampleData struct {
-	Before []string `json:"before"`
-	After  []string `json:"after"`
-}
-
-type modernGoGuidelineData struct {
-	ID           string                `json:"id"`
-	SinceVersion string                `json:"since_version"`
-	Guideline    string                `json:"guideline"`
-	Details      string                `json:"details"`
-	Examples     []modernGoExampleData `json:"examples"`
-}
-
+//go:generate go run ./featuresgen guidelines.json ../../FEATURES.md
 //go:embed guidelines.json
 var modernGoGuidelinesJSON []byte
 
 var modernGoGuidelines = mustLoadModernGoGuidelines()
 
 func mustLoadModernGoGuidelines() []modernGoGuideline {
-	var guidelineData []modernGoGuidelineData
-	if err := json.Unmarshal(modernGoGuidelinesJSON, &guidelineData); err != nil {
-		panic(fmt.Sprintf("parse embedded guidelines.json: %v", err))
+	guidelineData, err := schema.Parse(modernGoGuidelinesJSON)
+	if err != nil {
+		panic(fmt.Sprintf("load embedded guidelines.json: %v", err))
 	}
 
 	guidelines := make([]modernGoGuideline, 0, len(guidelineData))
@@ -58,6 +49,9 @@ func mustLoadModernGoGuidelines() []modernGoGuideline {
 		guidelines = append(guidelines, modernGoGuideline{
 			id:           guideline.ID,
 			sinceVersion: guideline.SinceVersion,
+			modernizer:   *guideline.Modernizer,
+			category:     guideline.Category,
+			impact:       guideline.Impact,
 			guideline:    guideline.Guideline,
 			details:      guideline.Details,
 			examples:     examples,

@@ -2,11 +2,11 @@
 
 # Modern Go Guidelines
 
-This repository contains [guidelines](https://github.com/JetBrains/go-modern-guidelines/blob/main/plugin/skills/use-modern-go/SKILL.md) for code agents that help them write modern Go code.
+This repository contains guidelines for code agents that help them write modern Go code.
 
 For example, an agent with these guidelines uses `max(a, b)` instead of an if-else block, `slices.Contains` instead of a manual loop, `cmp.Or(a, b, c)` instead of a chain of nil checks. It also knows about recent additions like `new(42)` to get a pointer to a value and `errors.AsType[T](err)` for type-safe error matching—both from Go 1.26.
 
-The guidelines cover the most useful features from Go 1.0 through Go 1.27, including everything targeted by the `modernize` analyzer. An agent will:
+The guidelines cover the most useful features from Go 1.0 through Go 1.27, including everything targeted by the `modernize` analyzer. See [FEATURES.md](FEATURES.md) for the complete list with detailed descriptions and examples. An agent will:
 
 - Detect the project's Go version from `go.mod`
 - Use language features and stdlib additions available up to and including that version

@@ -2,6 +2,9 @@
   {
     "id": "generic_methods",
     "since_version": "1.27",
+    "modernizer": false,
+    "category": "Types",
+    "impact": "Medium",
     "guideline": "Use generic methods instead of package-level generic helper functions when the operation naturally belongs to the type itself.",
     "details": "Generic methods keep operations in the namespace of the type that owns them. Keep package-level helpers for operations that do not naturally belong to one receiver type.",
     "examples": [
@@ -42,8 +45,11 @@
   {
     "id": "json_v2",
     "since_version": "1.27",
-    "guideline": "Use encoding/json/v2 for new JSON code in Go 1.27+; leave existing encoding/json code unchanged unless migration is explicitly requested.",
-    "details": "encoding/json/v2 has stricter, more interoperable defaults: it rejects invalid UTF-8 and duplicate object names, encodes nil slices and maps as empty arrays and objects, and reports invalid JSON-related Go types. Prefer these defaults in new code. Do not replace encoding/json in existing code unless migration is explicitly requested, because even a compiling import change can alter wire behavior. For an explicit migration, begin with jsonv1.DefaultOptionsV1(), test serialized output and accepted input, then remove or override compatibility options deliberately; later options take precedence.",
+    "modernizer": false,
+    "category": "JSON",
+    "impact": "High",
+    "guideline": "Use `encoding/json/v2` for new JSON code in Go 1.27+; leave existing `encoding/json` code unchanged unless migration is explicitly requested.",
+    "details": "`encoding/json/v2` has stricter, more interoperable defaults: it rejects invalid UTF-8 and duplicate object names, encodes `nil` slices and maps as empty arrays and objects, and reports invalid JSON-related Go types. Prefer these defaults in new code. Do not replace `encoding/json` in existing code unless migration is explicitly requested, because even a compiling import change can alter wire behavior. For an explicit migration, begin with `jsonv1.DefaultOptionsV1()`, test serialized output and accepted input, then remove or override compatibility options deliberately; later options take precedence.",
     "examples": [
       {
         "before": [
@@ -145,8 +151,11 @@
   {
     "id": "promoted_field_literals",
     "since_version": "1.27",
+    "modernizer": true,
+    "category": "Types",
+    "impact": "Medium",
     "guideline": "Set embedded struct fields directly with promoted field names in Go 1.27+ struct literals instead of constructing the embedded struct explicitly.",
-    "details": "Go 1.27 allows keyed struct literals to set fields promoted from embedded struct types directly. Use Field: value in the outer literal instead of Embedded: Embedded{Field: value} when you are just setting promoted fields. Do not mix a promoted field with the embedded field that promotes it; pointer-embedded paths are not supported.",
+    "details": "Go 1.27 allows keyed struct literals to set fields promoted from embedded struct types directly. Use `Field: value` in the outer literal instead of `Embedded: Embedded{Field: value}` when you are just setting promoted fields. Do not mix a promoted field with the embedded field that promotes it; pointer-embedded paths are not supported.",
     "examples": [
       {
         "before": [
@@ -195,8 +204,11 @@
   {
     "id": "strings_bytes_cut_last",
     "since_version": "1.27",
-    "guideline": "Use strings.CutLast and bytes.CutLast instead of LastIndex plus manual slicing around the last separator.",
-    "details": "CutLast splits around the final separator and returns before, after, and found. It removes LastIndex checks and manual separator-length slicing.",
+    "modernizer": true,
+    "category": "Strings",
+    "impact": "Medium",
+    "guideline": "Use `strings.CutLast` and `bytes.CutLast` instead of `LastIndex` plus manual slicing around the last separator.",
+    "details": "`CutLast` splits around the final separator and returns before, after, and found. It removes `LastIndex` checks and manual separator-length slicing.",
     "examples": [
       {
         "before": [
@@ -227,8 +239,11 @@
   {
     "id": "stdlib_uuid",
     "since_version": "1.27",
-    "guideline": "Use the standard library uuid package instead of third-party libraries or custom UUID implementations when targeting Go 1.27+.",
-    "details": "The standard uuid package covers common UUID generation and parsing without an external dependency. Keep a third-party package only when targeting older Go versions or needing behavior outside the standard API.",
+    "modernizer": false,
+    "category": "Utilities",
+    "impact": "Medium",
+    "guideline": "Use the standard library `uuid` package instead of third-party libraries or custom UUID implementations when targeting Go 1.27+.",
+    "details": "The standard `uuid` package covers common UUID generation and parsing without an external dependency. Keep a third-party package only when targeting older Go versions or needing behavior outside the standard API.",
     "examples": [
       {
         "before": [
@@ -263,8 +278,11 @@
   {
     "id": "url_clone",
     "since_version": "1.27",
-    "guideline": "Use net/url URL.Clone and Values.Clone methods to copy URLs and URL values instead of manual copying.",
-    "details": "URL.Clone and Values.Clone create deep copies using net/url's own representation. They avoid partial manual copies that can accidentally share mutable slices or miss URL fields.",
+    "modernizer": false,
+    "category": "URL",
+    "impact": "Low",
+    "guideline": "Use the `URL.Clone` and `Values.Clone` methods from `net/url` to copy URLs and `URL` values instead of manual copying.",
+    "details": "`URL.Clone` and `Values.Clone` create deep copies using `net/url`'s own representation. They avoid partial manual copies that can accidentally share mutable slices or miss `URL` fields.",
     "examples": [
       {
         "before": [
@@ -299,8 +317,11 @@
   {
     "id": "new_expression",
     "since_version": "1.26",
-    "guideline": "Use new(value) for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for &value.",
-    "details": "new(value) creates a *T from a value expression. In struct literals, prefer Field: new(value) for pointer fields over helper calls whose only purpose is returning &value; keep helpers only when they add behavior.",
+    "modernizer": true,
+    "category": "Utilities",
+    "impact": "High",
+    "guideline": "Use `new(value)` for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for `&value`.",
+    "details": "`new(value)` creates a `*T` from a value expression. In struct literals, prefer `Field: new(value)` for pointer fields over helper calls whose only purpose is returning `&value`; keep helpers only when they add behavior.",
     "examples": [
       {
         "before": [
@@ -341,8 +362,11 @@
   {
     "id": "errors_as_type",
     "since_version": "1.26",
-    "guideline": "Use errors.AsType[T](err) when checking whether an error matches a specific type.",
-    "details": "errors.AsType returns the matched error value and a boolean directly. It avoids a separate temporary variable and the pointer-to-target pattern required by errors.As.",
+    "modernizer": true,
+    "category": "Errors",
+    "impact": "Medium",
+    "guideline": "Use `errors.AsType[T](err)` when checking whether an error matches a specific type.",
+    "details": "`errors.AsType` returns the matched error value and a boolean directly. It avoids a separate temporary variable and the pointer-to-target pattern required by `errors.As`.",
     "examples": [
       {
         "before": [
@@ -362,8 +386,11 @@
   {
     "id": "sync_waitgroup_go",
     "since_version": "1.25",
-    "guideline": "Use wg.Go when spawning goroutines tracked by a sync.WaitGroup.",
-    "details": "WaitGroup.Go starts a goroutine and handles the matching Add and Done calls. Use it when the goroutine's lifetime is exactly what the WaitGroup should track.",
+    "modernizer": true,
+    "category": "Sync",
+    "impact": "High",
+    "guideline": "Use `wg.Go` when spawning goroutines tracked by a `sync.WaitGroup`.",
+    "details": "`WaitGroup.Go` starts a goroutine and handles the matching `Add` and `Done` calls. Use it when the goroutine's lifetime is exactly what the `WaitGroup` should track.",
     "examples": [
       {
         "before": [
@@ -392,8 +419,11 @@
   {
     "id": "testing_t_context",
     "since_version": "1.24",
-    "guideline": "Use t.Context() when a test function needs a context tied to the test lifetime.",
-    "details": "t.Context returns a context tied to the test lifetime. It removes manual background context setup when helper work should stop as the test is ending.",
+    "modernizer": true,
+    "category": "Context",
+    "impact": "High",
+    "guideline": "Use `t.Context()` when a test function needs a context tied to the test lifetime.",
+    "details": "`t.Context()` returns a context tied to the test lifetime. It removes manual background context setup when helper work should stop as the test is ending.",
     "examples": [
       {
         "before": [
@@ -415,8 +445,11 @@
   {
     "id": "json_omitzero",
     "since_version": "1.24",
-    "guideline": "Use omitzero on JSON-tagged bool, numeric, struct, and time fields whose zero value should be omitted; keep omitempty for empty strings, slices, and maps.",
-    "details": "When adding or editing JSON struct tags, use omitzero when the Go zero value means the field is absent, such as false, 0, or a zero time. Use omitempty when JSON empty-value semantics are intended, especially empty strings, slices, and maps.",
+    "modernizer": true,
+    "category": "JSON",
+    "impact": "Medium",
+    "guideline": "Use `omitzero` on JSON-tagged bool, numeric, struct, and time fields whose zero value should be omitted; keep `omitempty` for empty strings, slices, and maps.",
+    "details": "When adding or editing JSON struct tags, use `omitzero` when the Go zero value means the field is absent, such as `false`, `0`, or a zero time. Use `omitempty` when JSON empty-value semantics are intended, especially empty strings, slices, and maps.",
     "examples": [
       {
         "before": [
@@ -441,8 +474,11 @@
   {
     "id": "testing_b_loop",
     "since_version": "1.24",
-    "guideline": "Use b.Loop() for the main loop in benchmark functions.",
-    "details": "b.Loop is the modern benchmark loop. It manages benchmark iteration mechanics for you and can remove the need for manual timer control in the benchmark body.",
+    "modernizer": true,
+    "category": "Testing",
+    "impact": "Medium",
+    "guideline": "Use `b.Loop()` for the main loop in benchmark functions.",
+    "details": "`b.Loop()` is the modern benchmark loop. It manages benchmark iteration mechanics for you and can remove the need for manual timer control in the benchmark body.",
     "examples": [
       {
         "before": [
@@ -465,8 +501,11 @@
   {
     "id": "strings_split_seq",
     "since_version": "1.24",
-    "guideline": "Use strings or bytes SplitSeq and FieldsSeq helpers when iterating over split results.",
-    "details": "SplitSeq and FieldsSeq stream substrings instead of allocating a slice of all parts. The same idea applies to the matching bytes package helpers.",
+    "modernizer": true,
+    "category": "Strings",
+    "impact": "High",
+    "guideline": "Use `strings.SplitSeq`, `strings.FieldsSeq`, `bytes.SplitSeq`, or `bytes.FieldsSeq` when iterating over split results.",
+    "details": "The `SplitSeq` and `FieldsSeq` helpers stream substrings instead of allocating a slice of all parts.",
     "examples": [
       {
         "before": [
@@ -497,8 +536,11 @@
   {
     "id": "maps_keys_values_iter",
     "since_version": "1.23",
-    "guideline": "Use maps.Keys or maps.Values directly as iterators instead of manually looping over a map.",
-    "details": "maps.Keys and maps.Values can be ranged over directly when a slice is not needed. This avoids allocating a temporary collection just to iterate.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "High",
+    "guideline": "Use `maps.Keys` or `maps.Values` directly as iterators instead of manually looping over a map.",
+    "details": "`maps.Keys` and `maps.Values` can be ranged over directly when a slice is not needed. This avoids allocating a temporary collection just to iterate.",
     "examples": [
       {
         "before": [
@@ -517,8 +559,11 @@
   {
     "id": "slices_collect",
     "since_version": "1.23",
-    "guideline": "Use slices.Collect to build a slice from an iterator.",
-    "details": "slices.Collect materializes an iterator into a slice when a slice is actually required. Prefer ranging over the iterator directly when streaming is enough.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `slices.Collect` to build a slice from an iterator.",
+    "details": "`slices.Collect` materializes an iterator into a slice when a slice is actually required. Prefer ranging over the iterator directly when streaming is enough.",
     "examples": [
       {
         "before": [
@@ -536,8 +581,11 @@
   {
     "id": "slices_sorted",
     "since_version": "1.23",
-    "guideline": "Use slices.Sorted to collect and sort iterator values in one step.",
-    "details": "slices.Sorted collects iterator values and sorts them in one call. It is useful for deterministic output from unordered sources such as map keys.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `slices.Sorted` to collect and sort iterator values in one step.",
+    "details": "`slices.Sorted` collects iterator values and sorts them in one call. It is useful for deterministic output from unordered sources such as map keys.",
     "examples": [
       {
         "before": [
@@ -556,8 +604,11 @@
   {
     "id": "time_tick_gc",
     "since_version": "1.23",
-    "guideline": "Use time.Tick when it fits; Go 1.23 can recover unreferenced tickers without requiring Stop for GC.",
-    "details": "Go 1.23 made unreferenced tickers recoverable by the garbage collector. Use time.Tick for simple forever loops, and use time.NewTicker when you need Stop or Reset.",
+    "modernizer": false,
+    "category": "Time",
+    "impact": "Low",
+    "guideline": "Use `time.Tick` when it fits; Go 1.23 can recover unreferenced tickers without requiring `Stop` for GC.",
+    "details": "Go 1.23 made unreferenced tickers recoverable by the garbage collector. Use `time.Tick` for simple forever loops, and use `time.NewTicker` when you need `Stop` or `Reset`.",
     "examples": [
       {
         "before": [
@@ -578,7 +629,10 @@
   {
     "id": "range_over_int",
     "since_version": "1.22",
-    "guideline": "Use for i := range n when iterating from 0 to n-1.",
+    "modernizer": true,
+    "category": "Loops",
+    "impact": "Critical",
+    "guideline": "Use `for i := range n` when iterating from `0` to `n-1`.",
     "details": "Ranging over an integer is the concise Go 1.22 form for zero-based count loops. Keep a traditional for loop when you need a non-zero start, custom step, or changing bound.",
     "examples": [
       {
@@ -598,8 +652,11 @@
   {
     "id": "loopvar_capture",
     "since_version": "1.22",
+    "modernizer": true,
+    "category": "Loops",
+    "impact": "High",
     "guideline": "Do not add redundant loop-variable copies before closures or taking addresses; Go 1.22 gives each iteration its own variables.",
-    "details": "Go 1.22 gives each loop iteration its own variables, so defensive copies like v := v are usually redundant before closures, goroutines, deferred functions, or appending &v. Keep an explicit copy only when it serves another purpose. If you need a pointer to the original slice element rather than the per-iteration copy, use &slice[i].",
+    "details": "Go 1.22 gives each loop iteration its own variables, so defensive copies like `v := v` are usually redundant before closures, goroutines, deferred functions, or appending `&v`. Keep an explicit copy only when it serves another purpose. If you need a pointer to the original slice element rather than the per-iteration copy, use `&slice[i]`.",
     "examples": [
       {
         "before": [
@@ -642,8 +699,11 @@
   {
     "id": "cmp_or",
     "since_version": "1.22",
-    "guideline": "Use cmp.Or to pick the first non-zero value from a fallback chain.",
-    "details": "cmp.Or returns the first non-zero value from its arguments. It is concise for simple fallback chains, but remember that all arguments are evaluated before the call.",
+    "modernizer": false,
+    "category": "Utilities",
+    "impact": "High",
+    "guideline": "Use `cmp.Or` to pick the first non-zero value from a fallback chain.",
+    "details": "`cmp.Or` returns the first non-zero value from its arguments. It is concise for simple fallback chains, but remember that all arguments are evaluated before the call.",
     "examples": [
       {
         "before": [
@@ -661,8 +721,11 @@
   {
     "id": "reflect_type_for",
     "since_version": "1.22",
-    "guideline": "Use reflect.TypeFor[T]() instead of reflect.TypeOf((*T)(nil)).Elem().",
-    "details": "reflect.TypeFor returns the reflect.Type for a compile-time type parameter or type argument. It avoids nil-pointer tricks and is clearer for interface types.",
+    "modernizer": true,
+    "category": "Types",
+    "impact": "Low",
+    "guideline": "Use `reflect.TypeFor[T]()` instead of `reflect.TypeOf((*T)(nil)).Elem()`.",
+    "details": "`reflect.TypeFor` returns the `reflect.Type` for a compile-time type parameter or type argument. It avoids `nil`-pointer tricks and is clearer for interface types.",
     "examples": [
       {
         "before": [
@@ -677,8 +740,11 @@
   {
     "id": "http_servemux_patterns",
     "since_version": "1.22",
-    "guideline": "Use method-aware ServeMux patterns and r.PathValue for path parameters.",
-    "details": "The modern ServeMux pattern syntax can include an HTTP method and named path wildcards. r.PathValue retrieves wildcard values without manual path trimming.",
+    "modernizer": false,
+    "category": "HTTP",
+    "impact": "Medium",
+    "guideline": "Use method-aware `ServeMux` patterns and `r.PathValue` for path parameters.",
+    "details": "The modern `ServeMux` pattern syntax can include an HTTP method and named path wildcards. `r.PathValue` retrieves wildcard values without manual path trimming.",
     "examples": [
       {
         "before": [
@@ -702,8 +768,11 @@
   {
     "id": "min_max",
     "since_version": "1.21",
-    "guideline": "Use built-in min and max instead of handwritten comparisons.",
-    "details": "The min and max built-ins express ordered comparisons directly. They remove branch boilerplate when the logic is simply choosing the smaller or larger value.",
+    "modernizer": true,
+    "category": "Collections",
+    "impact": "High",
+    "guideline": "Use built-in `min` and `max` instead of handwritten comparisons.",
+    "details": "The `min` and `max` built-ins express ordered comparisons directly. They remove branch boilerplate when the logic is simply choosing the smaller or larger value.",
     "examples": [
       {
         "before": [
@@ -720,8 +789,11 @@
   {
     "id": "clear",
     "since_version": "1.21",
-    "guideline": "Use clear(m) to delete all map entries or clear(s) to zero slice elements.",
-    "details": "clear is the idiomatic built-in for removing all map entries or zeroing the elements of a slice. For slices it preserves the slice length and capacity.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `clear(m)` to delete all map entries or `clear(s)` to zero slice elements.",
+    "details": "`clear` is the idiomatic built-in for removing all map entries or zeroing the elements of a slice. For slices it preserves the slice length and capacity.",
     "examples": [
       {
         "before": [
@@ -738,8 +810,11 @@
   {
     "id": "slices_contains",
     "since_version": "1.21",
-    "guideline": "Use slices.Contains instead of a manual search loop.",
-    "details": "slices.Contains is the direct membership test for slices of comparable values. It replaces a manual search loop whose only result is whether the element is present.",
+    "modernizer": true,
+    "category": "Collections",
+    "impact": "Critical",
+    "guideline": "Use `slices.Contains` instead of a manual search loop.",
+    "details": "`slices.Contains` is the direct membership test for slices of comparable values. It replaces a manual search loop whose only result is whether the element is present.",
     "examples": [
       {
         "before": [
@@ -760,8 +835,11 @@
   {
     "id": "slices_index",
     "since_version": "1.21",
-    "guideline": "Use slices.Index to find the index of an element, returning -1 when absent.",
-    "details": "slices.Index is the direct index lookup for slices of comparable values. It returns -1 when the value is absent, matching the common handwritten convention.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `slices.Index` to find the index of an element, returning `-1` when absent.",
+    "details": "`slices.Index` is the direct index lookup for slices of comparable values. It returns `-1` when the value is absent, matching the common handwritten convention.",
     "examples": [
       {
         "before": [
@@ -782,8 +860,11 @@
   {
     "id": "slices_index_func",
     "since_version": "1.21",
-    "guideline": "Use slices.IndexFunc to find an element by predicate.",
-    "details": "slices.IndexFunc is the standard predicate-based lookup. Use it when the match depends on fields, derived values, or any condition other than direct equality.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `slices.IndexFunc` to find an element by predicate.",
+    "details": "`slices.IndexFunc` is the standard predicate-based lookup. Use it when the match depends on fields, derived values, or any condition other than direct equality.",
     "examples": [
       {
         "before": [
@@ -806,8 +887,11 @@
   {
     "id": "slices_sort_func",
     "since_version": "1.21",
-    "guideline": "Use slices.SortFunc with cmp.Compare instead of sort.Slice for typed comparisons.",
-    "details": "slices.SortFunc compares typed elements directly, avoiding sort.Slice closures that index back into the slice. cmp.Compare is the usual comparator for ordered fields.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "High",
+    "guideline": "Use `slices.SortFunc` with `cmp.Compare` instead of `sort.Slice` for typed comparisons.",
+    "details": "`slices.SortFunc` compares typed elements directly, avoiding `sort.Slice` closures that index back into the slice. `cmp.Compare` is the usual comparator for ordered fields.",
     "examples": [
       {
         "before": [
@@ -826,8 +910,11 @@
   {
     "id": "slices_sort",
     "since_version": "1.21",
-    "guideline": "Use slices.Sort for slices of ordered values.",
-    "details": "slices.Sort is the generic sort for slices of ordered values. It replaces older type-specific helpers and simple sort.Slice calls.",
+    "modernizer": true,
+    "category": "Collections",
+    "impact": "High",
+    "guideline": "Use `slices.Sort` for slices of ordered values.",
+    "details": "`slices.Sort` is the generic sort for slices of ordered values. It replaces older type-specific helpers and simple `sort.Slice` calls.",
     "examples": [
       {
         "before": [
@@ -842,8 +929,11 @@
   {
     "id": "slices_max_min",
     "since_version": "1.21",
-    "guideline": "Use slices.Max and slices.Min instead of manual loops over ordered values.",
-    "details": "slices.Max and slices.Min capture the common non-empty-slice scan for an ordered maximum or minimum. Keep explicit logic when empty slices or custom comparison rules need special handling.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `slices.Max` and `slices.Min` instead of manual loops over ordered values.",
+    "details": "`slices.Max` and `slices.Min` capture the common non-empty-slice scan for an ordered maximum or minimum. Keep explicit logic when empty slices or custom comparison rules need special handling.",
     "examples": [
       {
         "before": [
@@ -863,8 +953,11 @@
   {
     "id": "slices_reverse",
     "since_version": "1.21",
-    "guideline": "Use slices.Reverse instead of a manual swap loop.",
-    "details": "slices.Reverse performs an in-place reversal without hand-written index math. It is clearer and less error-prone than open-coded swap loops.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `slices.Reverse` instead of a manual swap loop.",
+    "details": "`slices.Reverse` performs an in-place reversal without hand-written index math. It is clearer and less error-prone than open-coded swap loops.",
     "examples": [
       {
         "before": [
@@ -881,8 +974,11 @@
   {
     "id": "slices_compact",
     "since_version": "1.21",
-    "guideline": "Use slices.Compact to remove consecutive duplicates in place.",
-    "details": "slices.Compact removes consecutive duplicate values in place. If the goal is to remove all duplicates, sort or otherwise group equal values first.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Low",
+    "guideline": "Use `slices.Compact` to remove consecutive duplicates in place.",
+    "details": "`slices.Compact` removes consecutive duplicate values in place. If the goal is to remove all duplicates, sort or otherwise group equal values first.",
     "examples": [
       {
         "before": [
@@ -903,8 +999,11 @@
   {
     "id": "slices_clip",
     "since_version": "1.21",
-    "guideline": "Use slices.Clip to remove unused capacity.",
-    "details": "slices.Clip limits a slice's capacity to its length. Use it to stop retaining excess backing-array capacity or to prevent later appends from reusing hidden capacity.",
+    "modernizer": true,
+    "category": "Collections",
+    "impact": "Low",
+    "guideline": "Use `slices.Clip` to remove unused capacity.",
+    "details": "`slices.Clip` limits a slice's capacity to its length. Use it to stop retaining excess backing-array capacity or to prevent later appends from reusing hidden capacity.",
     "examples": [
       {
         "before": [
@@ -919,8 +1018,11 @@
   {
     "id": "slices_clone",
     "since_version": "1.21",
-    "guideline": "Use slices.Clone to copy a slice.",
-    "details": "slices.Clone returns a shallow copy of a slice using the standard helper. It is clearer than append-copy boilerplate and preserves nil slices.",
+    "modernizer": true,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `slices.Clone` to copy a slice.",
+    "details": "`slices.Clone` returns a shallow copy of a slice using the standard helper. It is clearer than append-copy boilerplate and preserves `nil` slices.",
     "examples": [
       {
         "before": [
@@ -935,8 +1037,11 @@
   {
     "id": "maps_clone",
     "since_version": "1.21",
-    "guideline": "Use maps.Clone instead of manual map iteration.",
-    "details": "maps.Clone returns a shallow copy of a map using the standard helper. It preserves nil maps and makes the copy operation explicit.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `maps.Clone` instead of manual map iteration.",
+    "details": "`maps.Clone` returns a shallow copy of a map using the standard helper. It preserves `nil` maps and makes the copy operation explicit.",
     "examples": [
       {
         "before": [
@@ -954,8 +1059,11 @@
   {
     "id": "maps_copy",
     "since_version": "1.21",
-    "guideline": "Use maps.Copy to copy entries from one map into another.",
-    "details": "maps.Copy copies all entries from one map into another, overwriting existing keys in the destination. It replaces loops whose body only assigns dst[k] = v.",
+    "modernizer": true,
+    "category": "Collections",
+    "impact": "Medium",
+    "guideline": "Use `maps.Copy` to copy entries from one map into another.",
+    "details": "`maps.Copy` copies all entries from one map into another, overwriting existing keys in the destination. It replaces loops whose body only assigns `dst[k] = v`.",
     "examples": [
       {
         "before": [
@@ -972,8 +1080,11 @@
   {
     "id": "maps_delete_func",
     "since_version": "1.21",
-    "guideline": "Use maps.DeleteFunc to delete map entries that match a predicate.",
-    "details": "maps.DeleteFunc deletes entries selected by a predicate. It keeps the filtering condition in one callback and avoids hand-written delete loops.",
+    "modernizer": false,
+    "category": "Collections",
+    "impact": "Low",
+    "guideline": "Use `maps.DeleteFunc` to delete map entries that match a predicate.",
+    "details": "`maps.DeleteFunc` deletes entries selected by a predicate. It keeps the filtering condition in one callback and avoids hand-written delete loops.",
     "examples": [
       {
         "before": [
@@ -994,8 +1105,11 @@
   {
     "id": "sync_once_func",
     "since_version": "1.21",
-    "guideline": "Use sync.OnceFunc instead of sync.Once plus a wrapper closure.",
-    "details": "sync.OnceFunc wraps a function so that the returned function runs it at most once. It is a compact fit for idempotent cleanup or one-time initialization hooks.",
+    "modernizer": false,
+    "category": "Sync",
+    "impact": "Medium",
+    "guideline": "Use `sync.OnceFunc` instead of `sync.Once` plus a wrapper closure.",
+    "details": "`sync.OnceFunc` wraps a function so that the returned function runs it at most once. It is a compact fit for idempotent cleanup or one-time initialization hooks.",
     "examples": [
       {
         "before": [
@@ -1017,8 +1131,11 @@
   {
     "id": "sync_once_value",
     "since_version": "1.21",
-    "guideline": "Use sync.OnceValue to memoize a computed value.",
-    "details": "sync.OnceValue memoizes a computed value safely across goroutines. It replaces a sync.Once plus a separate result variable and getter closure.",
+    "modernizer": false,
+    "category": "Sync",
+    "impact": "Medium",
+    "guideline": "Use `sync.OnceValue` to memoize a computed value.",
+    "details": "`sync.OnceValue` memoizes a computed value safely across goroutines. It replaces a `sync.Once` plus a separate result variable and getter closure.",
     "examples": [
       {
         "before": [
@@ -1042,8 +1159,11 @@
   {
     "id": "context_after_func",
     "since_version": "1.21",
-    "guideline": "Use context.AfterFunc to run cleanup when a context is canceled.",
-    "details": "context.AfterFunc registers work to run after cancellation and returns a stop function. It avoids starting a goroutine whose only job is to wait on ctx.Done.",
+    "modernizer": false,
+    "category": "Context",
+    "impact": "Medium",
+    "guideline": "Use `context.AfterFunc` to run cleanup when a context is canceled.",
+    "details": "`context.AfterFunc` registers work to run after cancellation and returns a stop function. It avoids starting a goroutine whose only job is to wait on `ctx.Done()`.",
     "examples": [
       {
         "before": [
@@ -1062,8 +1182,11 @@
   {
     "id": "context_timeout_deadline_cause",
     "since_version": "1.21",
+    "modernizer": false,
+    "category": "Context",
+    "impact": "Low",
     "guideline": "Use timeout and deadline contexts with causes when callers need to inspect the cancellation reason.",
-    "details": "Timeout and deadline causes let callers distinguish the reason for cancellation with context.Cause. Use them when ctx.Err is too coarse for diagnostics or control flow.",
+    "details": "Timeout and deadline causes let callers distinguish the reason for cancellation with `context.Cause`. Use them when `ctx.Err()` is too coarse for diagnostics or control flow.",
     "examples": [
       {
         "before": [
@@ -1080,8 +1203,11 @@
   {
     "id": "bytes_clone",
     "since_version": "1.20",
-    "guideline": "Use bytes.Clone to copy a byte slice.",
-    "details": "bytes.Clone communicates that a new byte slice is required. It avoids append-copy boilerplate and preserves the standard library's nil-slice behavior.",
+    "modernizer": true,
+    "category": "Strings",
+    "impact": "Medium",
+    "guideline": "Use `bytes.Clone` to copy a byte slice.",
+    "details": "`bytes.Clone` communicates that a new byte slice is required. It avoids append-copy boilerplate and preserves the standard library's `nil`-slice behavior.",
     "examples": [
       {
         "before": [
@@ -1096,8 +1222,11 @@
   {
     "id": "strings_cut_prefix_suffix",
     "since_version": "1.20",
-    "guideline": "Use strings.CutPrefix or strings.CutSuffix when you need both the trimmed result and whether it matched.",
-    "details": "CutPrefix and CutSuffix combine the match check and trimming operation. They avoid writing HasPrefix or HasSuffix followed by a second operation that repeats the same condition.",
+    "modernizer": true,
+    "category": "Strings",
+    "impact": "High",
+    "guideline": "Use `strings.CutPrefix` or `strings.CutSuffix` when you need both the trimmed result and whether it matched.",
+    "details": "`CutPrefix` and `CutSuffix` combine the match check and trimming operation. They avoid writing `HasPrefix` or `HasSuffix` followed by a second operation that repeats the same condition.",
     "examples": [
       {
         "before": [
@@ -1117,8 +1246,11 @@
   {
     "id": "errors_join",
     "since_version": "1.20",
-    "guideline": "Use errors.Join to combine multiple errors while preserving error matching.",
-    "details": "errors.Join combines multiple non-nil errors while preserving error matching through errors.Is and errors.As. It returns nil when there are no non-nil errors.",
+    "modernizer": false,
+    "category": "Errors",
+    "impact": "High",
+    "guideline": "Use `errors.Join` to combine multiple errors while preserving error matching.",
+    "details": "`errors.Join` combines multiple non-`nil` errors while preserving error matching through `errors.Is` and `errors.As`. It returns `nil` when there are no non-`nil` errors.",
     "examples": [
       {
         "before": [
@@ -1135,8 +1267,11 @@
   {
     "id": "context_cancel_cause",
     "since_version": "1.20",
-    "guideline": "Use context.WithCancelCause and context.Cause when cancellation needs to carry an error cause.",
-    "details": "Cancellation causes let code record why a context was canceled. Callers can inspect context.Cause(ctx) instead of only seeing the broad ctx.Err result.",
+    "modernizer": false,
+    "category": "Context",
+    "impact": "Medium",
+    "guideline": "Use `context.WithCancelCause` and `context.Cause` when cancellation needs to carry an error cause.",
+    "details": "Cancellation causes let code record why a context was canceled. Callers can inspect `context.Cause(ctx)` instead of only seeing the broad `ctx.Err` result.",
     "examples": [
       {
         "before": [
@@ -1154,8 +1289,11 @@
   {
     "id": "fmt_appendf",
     "since_version": "1.19",
-    "guideline": "Use fmt.Appendf when appending formatted text to a byte slice and an intermediate fmt.Sprintf string is unnecessary.",
-    "details": "fmt.Appendf writes formatted output directly into a byte slice. It is useful when code is already accumulating []byte and the extra string allocation from fmt.Sprintf is not needed.",
+    "modernizer": true,
+    "category": "Fmt",
+    "impact": "Medium",
+    "guideline": "Use `fmt.Appendf` when appending formatted text to a byte slice and an intermediate `fmt.Sprintf` string is unnecessary.",
+    "details": "`fmt.Appendf` writes formatted output directly into a byte slice. It is useful when code is already accumulating `[]byte` and the extra string allocation from `fmt.Sprintf` is not needed.",
     "examples": [
       {
         "before": [
@@ -1170,7 +1308,10 @@
   {
     "id": "atomic_types",
     "since_version": "1.19",
-    "guideline": "Use typed atomics such as atomic.Bool, atomic.Int64, and atomic.Pointer[T] instead of untyped atomic functions.",
+    "modernizer": true,
+    "category": "Sync",
+    "impact": "Medium",
+    "guideline": "Use typed atomics such as `atomic.Bool`, `atomic.Int64`, and `atomic.Pointer[T]` instead of untyped atomic functions.",
     "details": "Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls.",
     "examples": [
       {
@@ -1204,8 +1345,11 @@
   {
     "id": "any",
     "since_version": "1.18",
-    "guideline": "Use any instead of interface{}.",
-    "details": "any is the built-in alias for interface{} introduced with generics. Use it for unconstrained values and type parameters so the code reads in current Go terminology.",
+    "modernizer": true,
+    "category": "Types",
+    "impact": "Critical",
+    "guideline": "Use `any` instead of `interface{}`.",
+    "details": "`any` is the built-in alias for `interface{}` introduced with generics. Use it for unconstrained values and type parameters so the code reads in current Go terminology.",
     "examples": [
       {
         "before": [
@@ -1224,8 +1368,11 @@
   {
     "id": "bytes_cut",
     "since_version": "1.18",
-    "guideline": "Use bytes.Cut instead of bytes.Index plus manual slicing.",
-    "details": "bytes.Cut returns before, after, and found in one call. It avoids duplicated Index checks and separator-length arithmetic while returning slices of the original byte slice.",
+    "modernizer": true,
+    "category": "Strings",
+    "impact": "Medium",
+    "guideline": "Use `bytes.Cut` instead of `bytes.Index` plus manual slicing.",
+    "details": "`bytes.Cut` returns before, after, and found in one call. It avoids duplicated Index checks and separator-length arithmetic while returning slices of the original byte slice.",
     "examples": [
       {
         "before": [
@@ -1244,8 +1391,11 @@
   {
     "id": "strings_clone",
     "since_version": "1.18",
-    "guideline": "Use strings.Clone to copy a string without retaining shared backing memory.",
-    "details": "strings.Clone forces a string copy. Use it when retaining a small string derived from a much larger string would otherwise keep the larger backing memory alive.",
+    "modernizer": false,
+    "category": "Strings",
+    "impact": "Medium",
+    "guideline": "Use `strings.Clone` to copy a string without retaining shared backing memory.",
+    "details": "`strings.Clone` forces a string copy. Use it when retaining a small string derived from a much larger string would otherwise keep the larger backing memory alive.",
     "examples": [
       {
         "before": [
@@ -1260,8 +1410,11 @@
   {
     "id": "strings_cut",
     "since_version": "1.18",
-    "guideline": "Use strings.Cut instead of strings.Index plus manual slicing.",
-    "details": "strings.Cut returns before, after, and found in one call. It makes split-at-first-separator logic explicit and removes manual Index checks and slicing.",
+    "modernizer": true,
+    "category": "Strings",
+    "impact": "Medium",
+    "guideline": "Use `strings.Cut` instead of `strings.Index` plus manual slicing.",
+    "details": "`strings.Cut` returns before, after, and found in one call. It makes split-at-first-separator logic explicit and removes manual Index checks and slicing.",
     "examples": [
       {
         "before": [
@@ -1280,8 +1433,11 @@
   {
     "id": "errors_is",
     "since_version": "1.13",
-    "guideline": "Use errors.Is(err, target) instead of err == target so wrapped errors are handled correctly.",
-    "details": "errors.Is walks wrapped errors and honors custom Is methods. Direct equality only matches the exact sentinel value and misses errors wrapped with fmt.Errorf or custom wrappers.",
+    "modernizer": false,
+    "category": "Errors",
+    "impact": "Critical",
+    "guideline": "Use `errors.Is(err, target)` instead of `err == target` so wrapped errors are handled correctly.",
+    "details": "`errors.Is` walks wrapped errors and honors custom `Is` methods. Direct equality only matches the exact sentinel value and misses errors wrapped with `fmt.Errorf` or custom wrappers.",
     "examples": [
       {
         "before": [
@@ -1300,8 +1456,11 @@
   {
     "id": "time_until",
     "since_version": "1.8",
-    "guideline": "Use time.Until(deadline) instead of deadline.Sub(time.Now()).",
-    "details": "time.Until is the standard spelling for remaining time before a deadline. It is equivalent to deadline.Sub(time.Now()) but reads in the direction the caller cares about.",
+    "modernizer": false,
+    "category": "Time",
+    "impact": "Medium",
+    "guideline": "Use `time.Until(deadline)` instead of `deadline.Sub(time.Now())`.",
+    "details": "`time.Until` is the standard spelling for remaining time before a deadline. It is equivalent to `deadline.Sub(time.Now())` but reads in the direction the caller cares about.",
     "examples": [
       {
         "before": [
@@ -1316,8 +1475,11 @@
   {
     "id": "time_since",
     "since_version": "1.0",
-    "guideline": "Use time.Since(start) instead of time.Now().Sub(start).",
-    "details": "time.Since is the standard spelling for elapsed time from a recorded start. It keeps the time.Now call inside the time package helper and makes the intent easier to scan.",
+    "modernizer": false,
+    "category": "Time",
+    "impact": "High",
+    "guideline": "Use `time.Since(start)` instead of `time.Now().Sub(start)`.",
+    "details": "`time.Since` is the standard spelling for elapsed time from a recorded start. It keeps the `time.Now` call inside the time package helper and makes the intent easier to scan.",
     "examples": [
       {
         "before": [
