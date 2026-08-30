@@ -10,7 +10,7 @@ Always write modern, idiomatic Go code. Use the Modern Go Guidelines CLI as the 
 Command:
 
 - Linux or macOS: `sh "<skill-dir>/scripts/run-tool.sh"`
-- Windows PowerShell: `'<skill-dir>\scripts\run-tool.ps1'`
+- Windows PowerShell: `& '<skill-dir>\scripts\run-tool.ps1'`
 
 First run and approvals:
 
