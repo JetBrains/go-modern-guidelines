@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Corrected the Windows PowerShell wrapper invocation to use the call operator (#26) @FenjuFu
 - Corrected the availability of the `strings_clone` guideline to Go 1.18 and later (#23) @chiang21fcb
 
 ## 1.1.1 - 2026-08-19
