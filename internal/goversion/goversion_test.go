@@ -139,6 +139,113 @@ func TestResolveFromNearestGoMod(t *testing.T) {
 	}
 }
 
+func TestResolveGoModWithoutGoDirectiveUsesLanguageDefault(t *testing.T) {
+	// The Go command reads a module whose go.mod has no go directive as
+	// language go1.16. Falling back to the local toolchain here made the CLI
+	// recommend features the go command then refuses to compile, for example
+	// "new(30) requires go1.26 or later (-lang was set to go1.16)".
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n")
+	goFile := filepath.Join(dir, "main.go")
+	writeFile(t, goFile, "package main\n")
+
+	got, err := Resolve(goFile, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.16" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.16")
+	}
+}
+
+func TestResolveGoModPathWithoutGoDirectiveUsesLanguageDefault(t *testing.T) {
+	dir := t.TempDir()
+	goMod := filepath.Join(dir, "go.mod")
+	writeFile(t, goMod, "module example.test/m\n")
+
+	got, err := Resolve(goMod, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.16" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.16")
+	}
+}
+
+func TestResolveGoModWithoutGoDirectiveIgnoresParentGoWork(t *testing.T) {
+	// A go.work above the module does not change the go command's answer: the
+	// member module is still built at go1.16, so the workspace version would be
+	// the wrong one to inherit.
+	dir := t.TempDir()
+	moduleDir := filepath.Join(dir, "m")
+	if err := os.MkdirAll(moduleDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(dir, "go.work"), "go 1.25\n\nuse ./m\n")
+	writeFile(t, filepath.Join(moduleDir, "go.mod"), "module example.test/m\n")
+	goFile := filepath.Join(moduleDir, "x.go")
+	writeFile(t, goFile, "package m\n")
+
+	got, err := Resolve(goFile, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.16" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.16")
+	}
+}
+
+func TestResolveGoWorkWithoutGoDirectiveFallsBackToToolchain(t *testing.T) {
+	// go.work carries no language-version default of its own, so a workspace
+	// file with no go directive and no go.mod alongside it keeps the existing
+	// toolchain fallback.
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "go.work"), "use ./m\n")
+
+	_, ok, err := resolveGoVersionFromModuleFiles(dir, "1.27")
+	if err != nil {
+		t.Fatalf("resolveGoVersionFromModuleFiles: %v", err)
+	}
+	if ok {
+		t.Fatal("resolveGoVersionFromModuleFiles claimed a version for a go.work with no go directive")
+	}
+}
+
+func TestResolveWithoutFilePathReadsModuleInWorkingDirectory(t *testing.T) {
+	// README: "Detect the project's Go version from go.mod". A bare `list`
+	// passes no file path, so without this it reported the local toolchain and
+	// offered guidelines the project's own go directive does not allow.
+	dir := t.TempDir()
+	pkgDir := filepath.Join(dir, "pkg")
+	if err := os.MkdirAll(pkgDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n\ngo 1.21\n")
+	t.Chdir(pkgDir)
+
+	got, err := Resolve("", "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.21" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.21")
+	}
+}
+
+func TestResolveWithoutFilePathFallsBackToToolchainOutsideAModule(t *testing.T) {
+	// No go.mod anywhere above the working directory, so the toolchain remains
+	// the only available answer.
+	t.Chdir(t.TempDir())
+
+	got, err := Resolve("", "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if !IsMajorMinor(got) {
+		t.Fatalf("Resolve = %q, want a major.minor toolchain version", got)
+	}
+}
+
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {

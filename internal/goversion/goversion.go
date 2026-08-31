@@ -15,6 +15,10 @@ import (
 
 var goVersionInText = regexp.MustCompile(`(?i)(?:^|\s)(?:go)?(\d+\.\d+)`)
 
+// defaultModuleLanguageVersion is the language version the go command assumes
+// for a module whose go.mod has no go directive. See https://go.dev/ref/mod#go-mod-file-go.
+const defaultModuleLanguageVersion = "1.16"
+
 // Resolve returns the normalized Go major.minor version for the given version source.
 func Resolve(filePath, goVersion, develVersion string) (string, error) {
 	explicitVersion := strings.TrimSpace(goVersion)
@@ -29,6 +33,19 @@ func Resolve(filePath, goVersion, develVersion string) (string, error) {
 	filePath = strings.TrimSpace(filePath)
 	if filePath != "" {
 		return resolveGoVersionFromPath(filePath, develVersion)
+	}
+
+	// No path given, so the working directory is the project. README promises
+	// the version is detected from go.mod; without this a bare `list` run
+	// inside a module reported the local toolchain instead.
+	if workingDir, err := os.Getwd(); err == nil {
+		version, ok, err := resolveGoVersionFromModuleFiles(workingDir, develVersion)
+		if err != nil {
+			return "", err
+		}
+		if ok {
+			return version, nil
+		}
 	}
 
 	return resolveGoToolVersion("local Go toolchain", develVersion)
@@ -92,7 +109,17 @@ func resolveGoVersionFromPath(filePath, develVersion string) (string, error) {
 func resolveGoVersionFromModuleFiles(startDir, develVersion string) (string, bool, error) {
 	if goMod := findUp(startDir, "go.mod"); goMod != "" {
 		version, ok, err := parseGoDirective(goMod, develVersion)
-		return version, ok, err
+		if err != nil {
+			return "", false, err
+		}
+		if !ok {
+			// To the go command a module with no go directive is language
+			// go1.16, whatever the local toolchain or an enclosing go.work
+			// says. Falling through to either of those made the CLI offer
+			// features the go command then refuses to compile.
+			return defaultModuleLanguageVersion, true, nil
+		}
+		return version, true, nil
 	}
 	if goWork := findUp(startDir, "go.work"); goWork != "" {
 		version, ok, err := parseGoDirective(goWork, develVersion)
