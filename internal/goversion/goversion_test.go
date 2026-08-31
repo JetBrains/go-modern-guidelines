@@ -26,6 +26,22 @@ func TestNormalizeGoVersion(t *testing.T) {
 	}
 }
 
+func TestNormalizeGoVersionStrictRejection(t *testing.T) {
+	invalidVersions := []string{
+		"1.24x",
+		"invalid.ver",
+		"go1.24.foo",
+		"abc1.24",
+	}
+
+	for _, input := range invalidVersions {
+		got, err := normalizeGoVersion(input, "1.27")
+		if err == nil {
+			t.Fatalf("normalizeGoVersion(%q) unexpectedly succeeded and returned %q, want error", input, got)
+		}
+	}
+}
+
 func TestNormalizeGoVersionDevelUsesConfiguredVersion(t *testing.T) {
 	got, err := normalizeGoVersion("devel", "1.99")
 	if err != nil {
