@@ -174,6 +174,10 @@ npx skills update use-modern-go -p -y
 
 For a globally installed skill, replace `-p` with `-g`.
 
+## Contributing
+
+Contributions are very welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a change.
+
 ## Local development
 
 To try changes to the CLI in your agent, build this checkout into the tool's cache:
