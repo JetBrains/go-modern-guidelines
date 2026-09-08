@@ -19,6 +19,10 @@ var goVersionInText = regexp.MustCompile(`(?i)(?:^|\s)(?:go)?(\d+\.\d+)`)
 // for a module whose go.mod has no go directive. See https://go.dev/ref/mod#go-mod-file-go.
 const defaultModuleLanguageVersion = "1.16"
 
+// defaultWorkspaceLanguageVersion is the language version the go command assumes
+// for a workspace whose go.work has no go directive. See https://go.dev/ref/mod#workspaces.
+const defaultWorkspaceLanguageVersion = "1.18"
+
 // Resolve returns the normalized Go major.minor version for the given version source.
 func Resolve(filePath, goVersion, develVersion string) (string, error) {
 	explicitVersion := strings.TrimSpace(goVersion)
@@ -84,11 +88,10 @@ func resolveGoVersionFromPath(filePath, develVersion string) (string, error) {
 	}
 
 	if !info.IsDir() && isModuleVersionFile(absolutePath) {
-		if version, ok, err := parseGoDirective(absolutePath, develVersion); err != nil {
-			return "", err
-		} else if ok {
-			return version, nil
-		}
+		// The named file answers for itself. Searching from its directory
+		// instead would let a neighbouring go.mod speak for an explicitly
+		// requested go.work.
+		return resolveGoVersionFromModuleFile(absolutePath, develVersion)
 	}
 
 	searchDir := absolutePath
@@ -107,25 +110,35 @@ func resolveGoVersionFromPath(filePath, develVersion string) (string, error) {
 }
 
 func resolveGoVersionFromModuleFiles(startDir, develVersion string) (string, bool, error) {
-	if goMod := findUp(startDir, "go.mod"); goMod != "" {
-		version, ok, err := parseGoDirective(goMod, develVersion)
+	for _, name := range []string{"go.mod", "go.work"} {
+		path := findUp(startDir, name)
+		if path == "" {
+			continue
+		}
+		version, err := resolveGoVersionFromModuleFile(path, develVersion)
 		if err != nil {
 			return "", false, err
 		}
-		if !ok {
-			// To the go command a module with no go directive is language
-			// go1.16, whatever the local toolchain or an enclosing go.work
-			// says. Falling through to either of those made the CLI offer
-			// features the go command then refuses to compile.
-			return defaultModuleLanguageVersion, true, nil
-		}
 		return version, true, nil
 	}
-	if goWork := findUp(startDir, "go.work"); goWork != "" {
-		version, ok, err := parseGoDirective(goWork, develVersion)
-		return version, ok, err
-	}
 	return "", false, nil
+}
+
+func resolveGoVersionFromModuleFile(path, develVersion string) (string, error) {
+	version, ok, err := parseGoDirective(path, develVersion)
+	if err != nil {
+		return "", err
+	}
+	if ok {
+		return version, nil
+	}
+	// A missing go directive still pins a language version, whatever the local
+	// toolchain or an enclosing go.work says. Falling through to either of
+	// those made the CLI offer features the go command then refuses to compile.
+	if filepath.Base(path) == "go.work" {
+		return defaultWorkspaceLanguageVersion, nil
+	}
+	return defaultModuleLanguageVersion, nil
 }
 
 func isModuleVersionFile(path string) bool {

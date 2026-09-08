@@ -195,19 +195,70 @@ func TestResolveGoModWithoutGoDirectiveIgnoresParentGoWork(t *testing.T) {
 	}
 }
 
-func TestResolveGoWorkWithoutGoDirectiveFallsBackToToolchain(t *testing.T) {
-	// go.work carries no language-version default of its own, so a workspace
-	// file with no go directive and no go.mod alongside it keeps the existing
-	// toolchain fallback.
+func TestResolveGoWorkWithoutGoDirectiveUsesWorkspaceLanguageDefault(t *testing.T) {
+	// The go command reads a workspace whose go.work has no go directive as
+	// go1.18, not as the local toolchain: "module m listed in go.work file
+	// requires go >= 1.24, but go.work implicitly requires go 1.18".
 	dir := t.TempDir()
 	writeFile(t, filepath.Join(dir, "go.work"), "use ./m\n")
 
-	_, ok, err := resolveGoVersionFromModuleFiles(dir, "1.27")
+	got, ok, err := resolveGoVersionFromModuleFiles(dir, "1.27")
 	if err != nil {
 		t.Fatalf("resolveGoVersionFromModuleFiles: %v", err)
 	}
-	if ok {
-		t.Fatal("resolveGoVersionFromModuleFiles claimed a version for a go.work with no go directive")
+	if !ok {
+		t.Fatal("resolveGoVersionFromModuleFiles did not resolve a version for a go.work with no go directive")
+	}
+	if got != "1.18" {
+		t.Fatalf("resolveGoVersionFromModuleFiles = %q, want %q", got, "1.18")
+	}
+}
+
+func TestResolveGoWorkPathWithoutGoDirectiveIgnoresNeighbouringGoMod(t *testing.T) {
+	// --file-path names the go.work, so the workspace default answers even
+	// though the go.mod beside it carries a go directive.
+	dir := t.TempDir()
+	goWork := filepath.Join(dir, "go.work")
+	writeFile(t, goWork, "use .\n")
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n\ngo 1.24\n")
+
+	got, err := Resolve(goWork, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.18" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.18")
+	}
+}
+
+func TestResolveGoWorkPathUsesItsGoDirective(t *testing.T) {
+	dir := t.TempDir()
+	goWork := filepath.Join(dir, "go.work")
+	writeFile(t, goWork, "go 1.25\n\nuse .\n")
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n\ngo 1.24\n")
+
+	got, err := Resolve(goWork, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.25" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.25")
+	}
+}
+
+func TestResolveDirectoryPrefersGoModOverGoWork(t *testing.T) {
+	// Passing the directory rather than a file keeps the search order: go.mod
+	// wins, so the workspace default must not leak into this case.
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "go.work"), "use .\n")
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n\ngo 1.24\n")
+
+	got, err := Resolve(dir, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.24" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.24")
 	}
 }
 
