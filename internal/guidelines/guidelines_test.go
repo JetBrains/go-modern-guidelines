@@ -105,3 +105,22 @@ func TestExplainFormatting(t *testing.T) {
 		t.Fatalf("explain output mismatch\nwant:\n%s\ngot:\n%s", want, output)
 	}
 }
+
+func TestWaitGroupGoDetailsStateLifecycleContract(t *testing.T) {
+	output, err := ExplainText([]string{"sync_waitgroup_go"})
+	if err != nil {
+		t.Fatalf("explain guideline: %v", err)
+	}
+
+	for _, want := range []string{
+		"must not panic",
+		"empty",
+		"before a `Wait`",
+		"after the previous `Wait` returns",
+		"explicit `Add`/`Done`",
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("WaitGroup.Go details missing %q:\n%s", want, output)
+		}
+	}
+}
