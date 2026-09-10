@@ -576,7 +576,7 @@ if pathErr, ok := errors.AsType[*os.PathError](err); ok {
 
 Use `wg.Go` when spawning goroutines tracked by a `sync.WaitGroup`.
 
-`WaitGroup.Go` starts a goroutine and handles the matching `Add` and `Done` calls. Use it when the goroutine's lifetime is exactly what the `WaitGroup` should track.
+`WaitGroup.Go` starts a goroutine and handles the matching `Add` and `Done` calls. Use it when the goroutine's lifetime is exactly what the `WaitGroup` should track. The function passed to `Go` must not panic. If the group is empty, call `Go` before a `Wait`; when reusing a group for an independent task set, start new work only after the previous `Wait` returns. Keep explicit `Add`/`Done` when registration is intentionally separate from launch.
 
 ### Example
 
