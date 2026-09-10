@@ -13,7 +13,7 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-var goVersionInText = regexp.MustCompile(`(?i)(?:^|\s)(?:go)?(\d+\.\d+)`)
+var strictGoVersionPattern = regexp.MustCompile(`(?i)^(?:go\s+version\s+)?(?:go)?(\d+\.\d+)(?:\.\d+)?(?:\s+.*)?$`)
 
 // defaultModuleLanguageVersion is the language version the go command assumes
 // for a module whose go.mod has no go directive. See https://go.dev/ref/mod#go-mod-file-go.
@@ -217,7 +217,7 @@ func normalizeGoVersion(rawVersion, develVersion string) (string, error) {
 		return develVersion, nil
 	}
 
-	match := goVersionInText.FindStringSubmatch(trimmed)
+	match := strictGoVersionPattern.FindStringSubmatch(trimmed)
 	if len(match) < 2 {
 		return "", fmt.Errorf("cannot parse Go version %q", rawVersion)
 	}
