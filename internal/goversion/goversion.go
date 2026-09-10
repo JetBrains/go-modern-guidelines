@@ -15,6 +15,14 @@ import (
 
 var goVersionInText = regexp.MustCompile(`(?i)(?:^|\s)(?:go)?(\d+\.\d+)`)
 
+// defaultModuleLanguageVersion is the language version the go command assumes
+// for a module whose go.mod has no go directive. See https://go.dev/ref/mod#go-mod-file-go.
+const defaultModuleLanguageVersion = "1.16"
+
+// defaultWorkspaceLanguageVersion is the language version the go command assumes
+// for a workspace whose go.work has no go directive. See https://go.dev/ref/mod#workspaces.
+const defaultWorkspaceLanguageVersion = "1.18"
+
 // Resolve returns the normalized Go major.minor version for the given version source.
 func Resolve(filePath, goVersion, develVersion string) (string, error) {
 	explicitVersion := strings.TrimSpace(goVersion)
@@ -29,6 +37,19 @@ func Resolve(filePath, goVersion, develVersion string) (string, error) {
 	filePath = strings.TrimSpace(filePath)
 	if filePath != "" {
 		return resolveGoVersionFromPath(filePath, develVersion)
+	}
+
+	// No path given, so the working directory is the project. README promises
+	// the version is detected from go.mod; without this a bare `list` run
+	// inside a module reported the local toolchain instead.
+	if workingDir, err := os.Getwd(); err == nil {
+		version, ok, err := resolveGoVersionFromModuleFiles(workingDir, develVersion)
+		if err != nil {
+			return "", err
+		}
+		if ok {
+			return version, nil
+		}
 	}
 
 	return resolveGoToolVersion("local Go toolchain", develVersion)
@@ -67,11 +88,10 @@ func resolveGoVersionFromPath(filePath, develVersion string) (string, error) {
 	}
 
 	if !info.IsDir() && isModuleVersionFile(absolutePath) {
-		if version, ok, err := parseGoDirective(absolutePath, develVersion); err != nil {
-			return "", err
-		} else if ok {
-			return version, nil
-		}
+		// The named file answers for itself. Searching from its directory
+		// instead would let a neighbouring go.mod speak for an explicitly
+		// requested go.work.
+		return resolveGoVersionFromModuleFile(absolutePath, develVersion)
 	}
 
 	searchDir := absolutePath
@@ -90,15 +110,35 @@ func resolveGoVersionFromPath(filePath, develVersion string) (string, error) {
 }
 
 func resolveGoVersionFromModuleFiles(startDir, develVersion string) (string, bool, error) {
-	if goMod := findUp(startDir, "go.mod"); goMod != "" {
-		version, ok, err := parseGoDirective(goMod, develVersion)
-		return version, ok, err
-	}
-	if goWork := findUp(startDir, "go.work"); goWork != "" {
-		version, ok, err := parseGoDirective(goWork, develVersion)
-		return version, ok, err
+	for _, name := range []string{"go.mod", "go.work"} {
+		path := findUp(startDir, name)
+		if path == "" {
+			continue
+		}
+		version, err := resolveGoVersionFromModuleFile(path, develVersion)
+		if err != nil {
+			return "", false, err
+		}
+		return version, true, nil
 	}
 	return "", false, nil
+}
+
+func resolveGoVersionFromModuleFile(path, develVersion string) (string, error) {
+	version, ok, err := parseGoDirective(path, develVersion)
+	if err != nil {
+		return "", err
+	}
+	if ok {
+		return version, nil
+	}
+	// A missing go directive still pins a language version, whatever the local
+	// toolchain or an enclosing go.work says. Falling through to either of
+	// those made the CLI offer features the go command then refuses to compile.
+	if filepath.Base(path) == "go.work" {
+		return defaultWorkspaceLanguageVersion, nil
+	}
+	return defaultModuleLanguageVersion, nil
 }
 
 func isModuleVersionFile(path string) bool {
