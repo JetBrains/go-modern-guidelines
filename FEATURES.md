@@ -472,19 +472,24 @@ copy := values.Clone()
 
 Use `new(value)` for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for `&value`.
 
-`new(value)` creates a `*T` from a value expression. In struct literals, prefer `Field: new(value)` for pointer fields over helper calls whose only purpose is returning `&value`; keep helpers only when they add behavior.
+`new(value)` creates a `*T` from a value expression. In struct literals, prefer `Field: new(value)` for pointer fields over helper calls whose only purpose is returning `&value`; keep helpers only when they add behavior. `new` uses the default type of an untyped constant, so `new(30)` yields `*int` and does not fit a `*time.Duration` or `*int32` field; write `new(30 * time.Second)` or `new(int32(30))` instead.
 
 ### Example 1
 
 **Before:**
 
 ```go
+type Config struct {
+	Timeout *time.Duration
+	Debug   *bool
+}
+
 func Pointer[T any](value T) *T {
 	return &value
 }
 
 cfg := Config{
-	Timeout: Pointer(30),
+	Timeout: Pointer(30 * time.Second),
 	Debug:   Pointer(true),
 }
 ```
@@ -492,8 +497,13 @@ cfg := Config{
 **After:**
 
 ```go
+type Config struct {
+	Timeout *time.Duration
+	Debug   *bool
+}
+
 cfg := Config{
-	Timeout: new(30),
+	Timeout: new(30 * time.Second),
 	Debug:   new(true),
 }
 ```
@@ -503,20 +513,25 @@ cfg := Config{
 **Before:**
 
 ```go
-timeout := 30
-debug := true
+type Config struct {
+	Retries *int
+}
+
+retries := 3
 cfg := Config{
-	Timeout: &timeout,
-	Debug:   &debug,
+	Retries: &retries,
 }
 ```
 
 **After:**
 
 ```go
+type Config struct {
+	Retries *int
+}
+
 cfg := Config{
-	Timeout: new(30),
-	Debug:   new(true),
+	Retries: new(3),
 }
 ```
 

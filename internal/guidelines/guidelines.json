@@ -321,39 +321,54 @@
     "category": "Utilities",
     "impact": "High",
     "guideline": "Use `new(value)` for pointer fields or arguments instead of generic/type-specific pointer helper functions or temporary variables used only for `&value`.",
-    "details": "`new(value)` creates a `*T` from a value expression. In struct literals, prefer `Field: new(value)` for pointer fields over helper calls whose only purpose is returning `&value`; keep helpers only when they add behavior.",
+    "details": "`new(value)` creates a `*T` from a value expression. In struct literals, prefer `Field: new(value)` for pointer fields over helper calls whose only purpose is returning `&value`; keep helpers only when they add behavior. `new` uses the default type of an untyped constant, so `new(30)` yields `*int` and does not fit a `*time.Duration` or `*int32` field; write `new(30 * time.Second)` or `new(int32(30))` instead.",
     "examples": [
       {
         "before": [
+          "type Config struct {",
+          "\tTimeout *time.Duration",
+          "\tDebug   *bool",
+          "}",
+          "",
           "func Pointer[T any](value T) *T {",
           "\treturn &value",
           "}",
           "",
           "cfg := Config{",
-          "\tTimeout: Pointer(30),",
+          "\tTimeout: Pointer(30 * time.Second),",
           "\tDebug:   Pointer(true),",
           "}"
         ],
         "after": [
+          "type Config struct {",
+          "\tTimeout *time.Duration",
+          "\tDebug   *bool",
+          "}",
+          "",
           "cfg := Config{",
-          "\tTimeout: new(30),",
+          "\tTimeout: new(30 * time.Second),",
           "\tDebug:   new(true),",
           "}"
         ]
       },
       {
         "before": [
-          "timeout := 30",
-          "debug := true",
+          "type Config struct {",
+          "\tRetries *int",
+          "}",
+          "",
+          "retries := 3",
           "cfg := Config{",
-          "\tTimeout: &timeout,",
-          "\tDebug:   &debug,",
+          "\tRetries: &retries,",
           "}"
         ],
         "after": [
+          "type Config struct {",
+          "\tRetries *int",
+          "}",
+          "",
           "cfg := Config{",
-          "\tTimeout: new(30),",
-          "\tDebug:   new(true),",
+          "\tRetries: new(3),",
           "}"
         ]
       }
