@@ -10,7 +10,7 @@
 
 - Corrected the Windows PowerShell wrapper invocation to use the call operator (#26) @FenjuFu
 - Corrected the availability of the `strings_clone` guideline to Go 1.18 and later (#23) @chiang21fcb
-- Corrected the new_expression guideline description and examples (#13) @mxssl
+- Corrected the `new_expression` guideline description and examples, and clarified behavior for test contexts, benchmarks, sorting, `cmp.Or`, and typed atomics (#13, #29) @mxssl
 
 ## 1.1.1 - 2026-08-19
 
