@@ -437,8 +437,8 @@
     "modernizer": true,
     "category": "Context",
     "impact": "High",
-    "guideline": "Use `t.Context()` when a test function needs a context tied to the test lifetime.",
-    "details": "`t.Context()` returns a context tied to the test lifetime. It removes manual background context setup when helper work should stop as the test is ending.",
+    "guideline": "Use `t.Context()` when a test function needs a context tied to the test lifetime; it is already canceled by the time `t.Cleanup` functions run, so do not pass it to cleanup work.",
+    "details": "`t.Context()` returns a context tied to the test lifetime. It removes manual background context setup when helper work should stop as the test is ending. The context is canceled before registered `t.Cleanup` functions run, so cleanup that needs a live context must create its own.",
     "examples": [
       {
         "before": [
@@ -492,8 +492,8 @@
     "modernizer": true,
     "category": "Testing",
     "impact": "Medium",
-    "guideline": "Use `b.Loop()` for the main loop in benchmark functions.",
-    "details": "`b.Loop()` is the modern benchmark loop. It manages benchmark iteration mechanics for you and can remove the need for manual timer control in the benchmark body.",
+    "guideline": "Use `b.Loop()` for the main loop in benchmark functions; the iteration count is not known before the loop runs, so a benchmark that sizes fixtures from `b.N` needs reworking rather than a mechanical loop swap.",
+    "details": "`b.Loop()` is the modern benchmark loop. It manages benchmark iteration mechanics for you and can remove the need for manual timer control in the benchmark body. `b.N` holds the executed iteration count only after `b.Loop()` returns false, so setup that allocates `b.N` elements before the loop has to be restructured instead of translated line by line.",
     "examples": [
       {
         "before": [
@@ -718,7 +718,7 @@
     "category": "Utilities",
     "impact": "High",
     "guideline": "Use `cmp.Or` to pick the first non-zero value from a fallback chain.",
-    "details": "`cmp.Or` returns the first non-zero value from its arguments. It is concise for simple fallback chains, but remember that all arguments are evaluated before the call.",
+    "details": "`cmp.Or` returns the first non-zero value from its arguments. All arguments are evaluated before the call, so it is the wrong choice when later entries are expensive or have side effects, and when a zero value such as `false` or `0` is a valid result rather than a missing one.",
     "examples": [
       {
         "before": [
@@ -905,8 +905,8 @@
     "modernizer": false,
     "category": "Collections",
     "impact": "High",
-    "guideline": "Use `slices.SortFunc` with `cmp.Compare` instead of `sort.Slice` for typed comparisons.",
-    "details": "`slices.SortFunc` compares typed elements directly, avoiding `sort.Slice` closures that index back into the slice. `cmp.Compare` is the usual comparator for ordered fields.",
+    "guideline": "Use `slices.SortFunc` with `cmp.Compare` instead of `sort.Slice` for typed comparisons; replace `sort.SliceStable` with `slices.SortStableFunc`, because `slices.SortFunc` is not stable.",
+    "details": "`slices.SortFunc` compares typed elements directly, avoiding `sort.Slice` closures that index back into the slice. `cmp.Compare` is the usual comparator for ordered fields. `slices.SortFunc` is not stable, so code that relied on `sort.SliceStable` needs `slices.SortStableFunc` to keep equal elements in their original order.",
     "examples": [
       {
         "before": [
@@ -1327,7 +1327,7 @@
     "category": "Sync",
     "impact": "Medium",
     "guideline": "Use typed atomics such as `atomic.Bool`, `atomic.Int64`, and `atomic.Pointer[T]` instead of untyped atomic functions.",
-    "details": "Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls.",
+    "details": "Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls. Prefer them in new code: replacing a raw `int64` or `unsafe.Pointer` field in an existing type changes its layout and size, and `atomic.Value` differs from `atomic.Pointer[T]` in nil and type handling, so migrate a type deliberately rather than call by call.",
     "examples": [
       {
         "before": [

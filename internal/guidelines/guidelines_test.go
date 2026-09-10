@@ -16,7 +16,7 @@ func TestListForResolvedVersion(t *testing.T) {
 		"cmp_or: Use `cmp.Or` to pick the first non-zero value from a fallback chain.",
 		"loopvar_capture: Do not add redundant loop-variable copies before closures or taking addresses; Go 1.22 gives each iteration its own variables.",
 		"maps_keys_values_iter: Use `maps.Keys` or `maps.Values` directly as iterators instead of manually looping over a map.",
-		"testing_t_context: Use `t.Context()` when a test function needs a context tied to the test lifetime.",
+		"testing_t_context: Use `t.Context()` when a test function needs a context tied to the test lifetime; it is already canceled by the time `t.Cleanup` functions run, so do not pass it to cleanup work.",
 		"json_omitzero: Use `omitzero` on JSON-tagged bool, numeric, struct, and time fields whose zero value should be omitted; keep `omitempty` for empty strings, slices, and maps.",
 	} {
 		if !strings.Contains(output, want) {
@@ -72,7 +72,7 @@ func TestExplainFormatting(t *testing.T) {
     ` + "Use typed atomics such as `atomic.Bool`, `atomic.Int64`, and `atomic.Pointer[T]` instead of untyped atomic functions." + `
 
   Details:
-    Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls.
+    ` + "Typed atomic wrapper values keep the storage and the atomic operations together. They make the value type visible, reduce accidental non-atomic access, and avoid old pointer-alignment pitfalls. Prefer them in new code: replacing a raw `int64` or `unsafe.Pointer` field in an existing type changes its layout and size, and `atomic.Value` differs from `atomic.Pointer[T]` in nil and type handling, so migrate a type deliberately rather than call by call." + `
 
   Examples:
 
