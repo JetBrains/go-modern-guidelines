@@ -297,6 +297,80 @@ func TestResolveWithoutFilePathFallsBackToToolchainOutsideAModule(t *testing.T) 
 	}
 }
 
+func TestResolveGoFileUsesItsBuildConstraintVersion(t *testing.T) {
+	// The go command type-checks a file whose //go:build line names a Go
+	// version at max(that version, go1.21), not at the go.mod version:
+	// "cannot range over 3 (untyped int constant): requires go1.22 or later
+	// (file declares //go:build go1.21)".
+	tests := []struct {
+		name   string
+		goMod  string
+		header string
+		want   string
+	}{
+		{name: "lower than go.mod", goMod: "1.24", header: "//go:build go1.21\n\n", want: "1.21"},
+		{name: "higher than go.mod", goMod: "1.21", header: "//go:build go1.23\n\n", want: "1.23"},
+		{name: "combined with other tags", goMod: "1.24", header: "//go:build go1.22 && (linux || darwin)\n\n", want: "1.22"},
+		{name: "below go1.21 is raised to go1.21", goMod: "1.24", header: "//go:build go1.18\n\n", want: "1.21"},
+		{name: "below go1.21 in an older module", goMod: "1.20", header: "//go:build go1.18\n\n", want: "1.21"},
+		{name: "no build constraint", goMod: "1.24", header: "", want: "1.24"},
+		{name: "build constraint without a version", goMod: "1.24", header: "//go:build linux || darwin\n\n", want: "1.24"},
+		{name: "negated version", goMod: "1.24", header: "//go:build !go1.30\n\n", want: "1.24"},
+		{name: "legacy +build line only", goMod: "1.24", header: "// +build go1.21\n\n", want: "1.24"},
+		{name: "doc comment is not a build constraint", goMod: "1.24", header: "// Package p needs go:build go1.21.\n", want: "1.24"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n\ngo "+tt.goMod+"\n")
+			goFile := filepath.Join(dir, "x.go")
+			writeFile(t, goFile, tt.header+"package p\n")
+
+			got, err := Resolve(goFile, "", "1.27")
+			if err != nil {
+				t.Fatalf("Resolve: %v", err)
+			}
+			if got != tt.want {
+				t.Fatalf("Resolve = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestResolveGoFileBuildConstraintWithoutModule(t *testing.T) {
+	// Outside a module the file's own constraint still decides the language
+	// version rather than the local toolchain.
+	t.Chdir(t.TempDir())
+	goFile := filepath.Join(t.TempDir(), "x.go")
+	writeFile(t, goFile, "//go:build go1.22\n\npackage p\n")
+
+	got, err := Resolve(goFile, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.22" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.22")
+	}
+}
+
+func TestResolveGoFileWithoutPackageClauseFallsBackToGoMod(t *testing.T) {
+	// A file that is empty or being written may not parse yet. That must not
+	// turn into an error; the module version still applies.
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "go.mod"), "module example.test/m\n\ngo 1.24\n")
+	goFile := filepath.Join(dir, "x.go")
+	writeFile(t, goFile, "")
+
+	got, err := Resolve(goFile, "", "1.27")
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	if got != "1.24" {
+		t.Fatalf("Resolve = %q, want %q", got, "1.24")
+	}
+}
+
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
