@@ -3,6 +3,8 @@ package goversion
 import (
 	"cmp"
 	"fmt"
+	"go/parser"
+	"go/token"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,6 +24,12 @@ const defaultModuleLanguageVersion = "1.16"
 // defaultWorkspaceLanguageVersion is the language version the go command assumes
 // for a workspace whose go.work has no go directive. See https://go.dev/ref/mod#workspaces.
 const defaultWorkspaceLanguageVersion = "1.18"
+
+// minFileLanguageVersion is the lowest language version a //go:build Go
+// version can select for its file. The go command type-checks such a file at
+// max(constraint version, go1.21), whatever the module's go directive says;
+// see Checker.initFiles in go/types.
+const minFileLanguageVersion = "1.21"
 
 // Resolve returns the normalized Go major.minor version for the given version source.
 func Resolve(filePath, goVersion, develVersion string) (string, error) {
@@ -103,10 +111,39 @@ func resolveGoVersionFromPath(filePath, develVersion string) (string, error) {
 		return "", err
 	}
 
+	if !info.IsDir() {
+		if fileVersion, ok := goFileLanguageVersion(absolutePath, develVersion); ok {
+			return fileVersion, nil
+		}
+	}
+
 	if hasModuleVersion {
 		return moduleVersion, nil
 	}
 	return resolveGoToolVersion("Go toolchain for "+filePath, develVersion)
+}
+
+// goFileLanguageVersion returns the language version a Go file selects for
+// itself with a //go:build constraint such as go1.21, raised to go1.21 as the
+// go command does. It reports false when the path is not a Go file, the file
+// has no such constraint, or its header does not parse yet, so the caller
+// falls back to go.mod.
+func goFileLanguageVersion(path, develVersion string) (string, bool) {
+	if filepath.Ext(path) != ".go" {
+		return "", false
+	}
+	file, _ := parser.ParseFile(token.NewFileSet(), path, nil, parser.PackageClauseOnly|parser.ParseComments)
+	if file == nil || file.GoVersion == "" {
+		return "", false
+	}
+	version, err := normalizeGoVersion(file.GoVersion, develVersion)
+	if err != nil {
+		return "", false
+	}
+	if Compare(version, minFileLanguageVersion) < 0 {
+		version = minFileLanguageVersion
+	}
+	return version, true
 }
 
 func resolveGoVersionFromModuleFiles(startDir, develVersion string) (string, bool, error) {
